@@ -20,7 +20,7 @@ POPULATION_SIZE = 50 # Change POPULATION_SIZE to obtain better fitness.
 GENERATIONS = 100 # Change GENERATIONS to obtain better fitness.
 SOLUTION_FOUND = False
 
-CORSSOVER_RATE = 0.8 # Change CORSSOVER_RATE  to obtain better fitness.
+CROSSOVER_RATE = 0.8 # Change CORSSOVER_RATE  to obtain better fitness.
 MUTATION_RATE = 0.2 # Change MUTATION_RATE to obtain better fitness.
 
 
@@ -94,8 +94,8 @@ def main():
 
         #TODO: present innovative graphical illustration like plots and presentation of genetic algorithm results 
         #This is free (as you like) innovative part of the assessment. 
-        break;
- 
+        break
+
 
 if __name__ == '__main__': 
     main() 
