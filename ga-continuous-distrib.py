@@ -23,21 +23,22 @@ SOLUTION_FOUND = False
 CROSSOVER_RATE = 0.8 # Change CORSSOVER_RATE  to obtain better fitness.
 MUTATION_RATE = 0.2 # Change MUTATION_RATE to obtain better fitness.
 
-
-# MINIMUM FUNCTIONS TO BE USED IN YOU COURSEWORK
-def generate_population(size, lower_bound, upper_bound):
-    
-    population = []# Update this line if you need to
-    #TODO : Write your own code to generate population of POPULATION_SIZE individuals    
+def generate_population(population_size, individual_size, lower_bound, upper_bound):
+    population = np.zeros((population_size, individual_size))
+    # Populate 'population' array with arrays of size individual_size of random float values between bounds
+    for i in range(population_size):
+        population[i,:] = np.random.uniform(lower_bound, upper_bound, (individual_size))
     
     return population
 
 
-def compute_fitness(individual):
-    #TODO : Write your own code to generate fitness function evaluation for your select functions
-    print('fitness computed')
-    fitness = np.nan()
-    
+def sum_squares_compute_fitness(individual, target):
+    # Generate an array of indexes from 1 to the individuals size
+    indexes = np.arange(1, individual.size + 1)
+    # Calculate the result based on: sum(ix^2), for the individuals values
+    result = np.sum(indexes * (np.sqrt(np.abs(individual)) * np.sign(individual)))
+    fitness = abs(result - target) # Calculate the results absolute distance from desired value
+
     return fitness
 
 
@@ -75,30 +76,35 @@ def next_generation(previous_population):
     print(' ') # Print appropriate generation information here. 
     return next_generation
     
+poop = generate_population(10, 5, -100, 100)
 
-# USE THIS MAIN FUNCTION TO COMPLETE YOUR CODE - MAKE SURE IT WILL RUN FROM COMOND LINE   
-def main(): 
-    global POPULATION_SIZE 
-    global GENERATIONS
-    global SOLUTION_FOUND
-    
-    lower_bound = [] #Update this
-    upper_bound = [] #Update this
-    
-    population = generate_population(POPULATION_SIZE, lower_bound, upper_bound)
-    
-    print('complete code for a continuous optimization problem:')
-    while (True):  # TODO: write your termination condition here or within the loop 
-        #TODO: write your generation propagation code here 
+for i in range(10):
+    yeet = sum_squares_compute_fitness(poop[i,:])
+    print(yeet)
 
-
-        #TODO: present innovative graphical illustration like plots and presentation of genetic algorithm results 
-        #This is free (as you like) innovative part of the assessment. 
-        break
-
-
-if __name__ == '__main__': 
-    main() 
+# # USE THIS MAIN FUNCTION TO COMPLETE YOUR CODE - MAKE SURE IT WILL RUN FROM COMOND LINE
+# def main():
+#     global POPULATION_SIZE
+#     global GENERATIONS
+#     global SOLUTION_FOUND
+#
+#     lower_bound = [] #Update this
+#     upper_bound = [] #Update this
+#
+#     population = generate_population(POPULATION_SIZE, lower_bound, upper_bound)
+#
+#     print('complete code for a continuous optimization problem:')
+#     while (True):  # TODO: write your termination condition here or within the loop
+#         #TODO: write your generation propagation code here
+#
+#
+#         #TODO: present innovative graphical illustration like plots and presentation of genetic algorithm results
+#         #This is free (as you like) innovative part of the assessment.
+#         break
+#
+#
+# if __name__ == '__main__':
+#     main()
     
     
     
