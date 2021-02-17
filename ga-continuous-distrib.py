@@ -24,38 +24,49 @@ CROSSOVER_RATE = 0.8 # Change CORSSOVER_RATE  to obtain better fitness.
 MUTATION_RATE = 0.2 # Change MUTATION_RATE to obtain better fitness.
 
 def generate_population(population_size, individual_size, lower_bound, upper_bound):
+    # Generate empty 2D array of size population_size x individual_size
     population = np.zeros((population_size, individual_size))
     # Populate 'population' array with arrays of size individual_size of random float values between bounds
     for i in range(population_size):
-        population[i,:] = np.random.uniform(lower_bound, upper_bound, (individual_size))
+        population[i,] = np.random.uniform(lower_bound, upper_bound, (individual_size))
     
     return population
 
 
-def sum_squares_compute_fitness(individual, target):
-    # Generate an array of indexes from 1 to the individuals size
-    indexes = np.arange(1, individual.size + 1)
-    # Calculate the result based on: sum(ix^2), for the individuals values
-    result = np.sum(indexes * (np.sqrt(np.abs(individual)) * np.sign(individual)))
-    fitness = abs(result - target) # Calculate the results absolute distance from desired value
+def sum_squares_compute_fitness(population, target):
+    # Generate a 1D array of indexes from 1 to the individuals size
+    indexes = np.arange(1, population.shape[1] + 1)
+    # Calculate the result based on: sum(ix^2), for each individuals values in the population
+    result = np.sum(indexes * ((np.abs(population[0:,:]) ** 2) * np.sign(population[0:,:])), axis=1)
+    fitness = abs(result[0:,] - target) # Calculate the results absolute distance from desired value
 
     return fitness
 
 
-def selection(population):
+def selection_roulette(population):
+    # Calculate the fitness of each individual in the population
+    fitness = sum_squares_compute_fitness(population, 0)
+    # Calculate each individuals fitness probability weighting using the total sum of each individuals fitness within the population
+    probabilities = fitness[0:,] / np.sum(fitness)
+    # Select two individuals from the population given the weighted probabilities
+    selection = np.random.choice(a=population.shape[0], size=2, p=probabilities)
+    parents = np.take(population, selection, axis=0)
 
-    individual = []  # Update this line if you need to
-    #TODO : Write your own code to for choice  of your selection operator
-    
-    return individual
-    
+    return parents
 
-def crossover(first_parent, second_parent):
+
+def single_point_crossover(parents):
+    # Generate an empty array the same shape as 'parents' array
+    children = np.zeros_like(parents)
+    crossover_point = random.randrange(1, parents.shape[1]) # Get a random index within the individuals index range
+    # First child takes values from first parent up to crossover point, then the rest of the values from second parent
+    # Second child takes values from second parent up to crossover point, then the rest of the values from first parent
+    # This is done using NumPy horizontal stack: https://numpy.org/doc/stable/reference/generated/numpy.hstack.html
+    children[0,] = np.hstack([parents[0, :crossover_point],parents[1, crossover_point:]])
+    children[1,] = np.hstack([parents[1, :crossover_point], parents[0, crossover_point:]])
     
-    individual = [] # Update this line if you need to
-    #TODO : Write your own code to for choice  of your crossover operator - you can use if condition to write more tan one ime of crossover operator
-    
-    return individual
+    return children
+
 
 def mutation(individual):
     
@@ -68,7 +79,6 @@ def mutation(individual):
 
 
 
-
 def next_generation(previous_population):
     #TODO : Write your own code to generate next 
     
@@ -76,11 +86,16 @@ def next_generation(previous_population):
     print(' ') # Print appropriate generation information here. 
     return next_generation
     
-poop = generate_population(10, 5, -100, 100)
+poop = generate_population(10, 7, -5, 5)
 
-for i in range(10):
-    yeet = sum_squares_compute_fitness(poop[i,:])
-    print(yeet)
+
+yeet = selection_roulette(poop)
+
+eerrm = single_point_crossover(yeet)
+
+# for i in range(10):
+#     yeet = sum_squares_compute_fitness(poop[i,:])
+#     print(yeet)
 
 # # USE THIS MAIN FUNCTION TO COMPLETE YOUR CODE - MAKE SURE IT WILL RUN FROM COMOND LINE
 # def main():
