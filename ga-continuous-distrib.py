@@ -43,13 +43,13 @@ def sum_squares_compute_fitness(population, target):
     return fitness
 
 
-def selection_roulette(population):
+def selection_roulette(population, n):
     # Calculate the fitness of each individual in the population
-    fitness = sum_squares_compute_fitness(population, 0)
+    fitness = sum_squares_compute_fitness(population, 0) #TODO: OUTSIDE FUNCTION!!!!
     # Calculate each individuals fitness probability weighting using the total sum of each individuals fitness within the population
     probabilities = fitness[0:,] / np.sum(fitness)
-    # Select two individuals from the population given the weighted probabilities
-    selection = np.random.choice(a=population.shape[0], size=2, p=probabilities)
+    # Select two individuals from the population given the weighted probabilities, for the amount specified by 'n'
+    selection = np.random.choice(a=population.shape[0], size=(n,2), p=probabilities)
     parents = np.take(population, selection, axis=0)
 
     return parents
@@ -58,68 +58,76 @@ def selection_roulette(population):
 def single_point_crossover(parents):
     # Generate an empty array the same shape as 'parents' array
     children = np.zeros_like(parents)
-    crossover_point = random.randrange(1, parents.shape[1]) # Get a random index within the individuals index range
+    crossover_point = random.randrange(1, parents.shape[2]) # Get a random index within the individuals index range
     # First child takes values from first parent up to crossover point, then the rest of the values from second parent
     # Second child takes values from second parent up to crossover point, then the rest of the values from first parent
+    # This is done for each set of parents in 'parents' 3D array
     # This is done using NumPy horizontal stack: https://numpy.org/doc/stable/reference/generated/numpy.hstack.html
-    children[0,] = np.hstack([parents[0, :crossover_point],parents[1, crossover_point:]])
-    children[1,] = np.hstack([parents[1, :crossover_point], parents[0, crossover_point:]])
+    children[:, 0, :] = np.hstack([parents[:, 0, :crossover_point],parents[:, 1, crossover_point:]])
+    children[:, 1, :] = np.hstack([parents[:, 1, :crossover_point], parents[:, 0, crossover_point:]])
     
     return children
 
 
-def mutation(individual):
-    
-    #TODO : Write your own code to for choice  of your mutation operator - you can use if condition to write more tan one ime of crossover operator
-    
+def uniform_mutation(individual, lower_bound, upper_bound, mutations):
+    # Randomly choose indexes within the individuals range, for the given amount of 'mutations'
+    indexes = np.random.choice(a=individual.size, replace=False, size=mutations)
+    # Replace the chosen indexes with random real values within the specified bounds
+    individual[indexes] = np.random.uniform(lower_bound, upper_bound, (mutations,))
 
     return individual
 
-#TODO : You can increase number of function to be used to improve your GA code 
 
+def next_generation(previous_population, population_size):
+    # Calculate the fitness of each individual in the population
+    fitness = sum_squares_compute_fitness(previous_population, 0) #TODO: OUTSIDE FUNCTION!!!!
+    # Get indexes that correspond to the lowest fitness values for the amount specified by 'population_size'
+    # This is done using NumPy 'argpartition' that has linear complexity: https://numpy.org/doc/stable/reference/generated/numpy.argpartition.html
+    fittest_indexes = np.argpartition(fitness, population_size - 1)[:population_size]
+    # Generate the next generation from fittest individuals in the population specified by 'fittest_indexes'
+    next_generation = previous_population[fittest_indexes]
 
-
-def next_generation(previous_population):
-    #TODO : Write your own code to generate next 
-    
-    
-    print(' ') # Print appropriate generation information here. 
     return next_generation
     
 poop = generate_population(10, 7, -5, 5)
-
-
-yeet = selection_roulette(poop)
-
+#
+# ahhh = next_generation(poop, 3)
+#
+yeet = selection_roulette(poop, 3)
+#
 eerrm = single_point_crossover(yeet)
+#
+# uniform_mutation(eerrm[0], -5, 5, 3)
+#
+# print("aa")
 
 # for i in range(10):
 #     yeet = sum_squares_compute_fitness(poop[i,:])
 #     print(yeet)
 
-# # USE THIS MAIN FUNCTION TO COMPLETE YOUR CODE - MAKE SURE IT WILL RUN FROM COMOND LINE
-# def main():
-#     global POPULATION_SIZE
-#     global GENERATIONS
-#     global SOLUTION_FOUND
-#
-#     lower_bound = [] #Update this
-#     upper_bound = [] #Update this
-#
-#     population = generate_population(POPULATION_SIZE, lower_bound, upper_bound)
-#
-#     print('complete code for a continuous optimization problem:')
-#     while (True):  # TODO: write your termination condition here or within the loop
-#         #TODO: write your generation propagation code here
-#
-#
-#         #TODO: present innovative graphical illustration like plots and presentation of genetic algorithm results
-#         #This is free (as you like) innovative part of the assessment.
-#         break
-#
-#
-# if __name__ == '__main__':
-#     main()
+# USE THIS MAIN FUNCTION TO COMPLETE YOUR CODE - MAKE SURE IT WILL RUN FROM COMOND LINE
+def main():
+    global POPULATION_SIZE
+    global GENERATIONS
+    global SOLUTION_FOUND
+
+    global CROSSOVER_RATE
+    global MUTATION_RATE
+
+    lower_bound = -5
+    upper_bound = 5
+
+    initial_population = generate_population(POPULATION_SIZE, lower_bound, upper_bound)
+    crossover_amount = round(POPULATION_SIZE * CROSSOVER_RATE)
+
+    while (SOLUTION_FOUND):
+
+
+        continue
+
+
+if __name__ == '__main__':
+    main()
     
     
     
