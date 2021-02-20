@@ -11,17 +11,11 @@ Keep you code anonymous
 import random 
 import math
 import numpy as np
+import pandas as pd
 import matplotlib as plt
 
 
-# MINIMUM GLOBAL VARIABLES TO BE USED
-POPULATION_SIZE = 50 # Change POPULATION_SIZE to obtain better fitness.
 
-GENERATIONS = 100 # Change GENERATIONS to obtain better fitness.
-SOLUTION_FOUND = False
-
-CROSSOVER_RATE = 0.8 # Change CORSSOVER_RATE  to obtain better fitness.
-MUTATION_RATE = 0.2 # Change MUTATION_RATE to obtain better fitness.
 
 def generate_population(population_size, individual_size, lower_bound, upper_bound):
     # Generate empty 2D array of size population_size x individual_size
@@ -33,49 +27,49 @@ def generate_population(population_size, individual_size, lower_bound, upper_bou
     return population
 
 
-def sum_squares_compute_fitness(population, target):
-    # Generate a 1D array of indexes from 1 to the individuals size
-    indexes = np.arange(1, population.shape[1] + 1)
-    # Calculate the result based on: sum(ix^2), for each individuals values in the population
-    result = np.sum(indexes * ((np.abs(population[0:,:]) ** 2) * np.sign(population[0:,:])), axis=1)
-    fitness = abs(result[0:,] - target) # Calculate the results absolute distance from desired value
-
-    return fitness
-
-
-def selection_roulette(population, n):
+def selection_roulette(population, crossover_rate, multi_selection=True):
     # Calculate the fitness of each individual in the population
     fitness = sum_squares_compute_fitness(population, 0) #TODO: OUTSIDE FUNCTION!!!!
     # Calculate each individuals fitness probability weighting using the total sum of each individuals fitness within the population
     probabilities = fitness[0:,] / np.sum(fitness)
-    # Select two individuals from the population given the weighted probabilities, for the amount specified by 'n'
-    selection = np.random.choice(a=population.shape[0], size=(n,2), p=probabilities)
+    # Calculate the number of parents to be selected based on crossover rate
+    selection_amount = int((population.shape[0] * crossover_rate) / 2)
+    # Select two individuals from the population given the weighted probabilities, for the amount specified by 'selection_amount'
+    selection = np.random.choice(a=population.shape[0], replace=multi_selection, size=(selection_amount, 2), p=probabilities)
     parents = np.take(population, selection, axis=0)
 
     return parents
 
 
 def single_point_crossover(parents):
-    # Generate an empty array the same shape as 'parents' array
-    children = np.zeros_like(parents)
+    children = np.zeros_like(parents) # Generate an empty array for the children the same shape as 'parents' array
     crossover_point = random.randrange(1, parents.shape[2]) # Get a random index within the individuals index range
     # First child takes values from first parent up to crossover point, then the rest of the values from second parent
     # Second child takes values from second parent up to crossover point, then the rest of the values from first parent
     # This is done for each set of parents in 'parents' 3D array
     # This is done using NumPy horizontal stack: https://numpy.org/doc/stable/reference/generated/numpy.hstack.html
-    children[:, 0, :] = np.hstack([parents[:, 0, :crossover_point],parents[:, 1, crossover_point:]])
+    children[:, 0, :] = np.hstack([parents[:, 0, :crossover_point], parents[:, 1, crossover_point:]])
     children[:, 1, :] = np.hstack([parents[:, 1, :crossover_point], parents[:, 0, crossover_point:]])
+    # Reshape children array vertically as they no longer need to be in pairs
+    children = np.reshape(children, (children.shape[0] * children.shape[1], children.shape[2]))
     
     return children
 
 
-def uniform_mutation(individual, lower_bound, upper_bound, mutations):
-    # Randomly choose indexes within the individuals range, for the given amount of 'mutations'
-    indexes = np.random.choice(a=individual.size, replace=False, size=mutations)
-    # Replace the chosen indexes with random real values within the specified bounds
-    individual[indexes] = np.random.uniform(lower_bound, upper_bound, (mutations,))
+def uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutations):
+    # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
+    children_selection = np.random.choice(a=[True,False], size=children.shape[0], p=[mutation_rate, 1-mutation_rate])
+    children_to_mutate = children[children_selection, :]
+    # Randomly choose indexes for each 'children_to_mutate' (which correspond to individuals 'genes') within the individuals range,
+    # for the given amount of 'mutations'
+    mutation_indexes = np.random.choice(a=children_to_mutate.shape[1], size=(children_to_mutate.shape[0], mutations))
+    # Replace the chosen indexes with random real values within the specified bounds, for each child selected for mutation
+    mutated_genes = np.random.uniform(lower_bound, upper_bound, (children_to_mutate.shape[0], mutations))
+    children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes] = mutated_genes
+    # Add the mutated children back into the 'children' array before returning them
+    children = np.vstack((children, children_to_mutate))
 
-    return individual
+    return children
 
 
 def next_generation(previous_population, population_size):
@@ -88,24 +82,34 @@ def next_generation(previous_population, population_size):
     next_generation = previous_population[fittest_indexes]
 
     return next_generation
-    
-poop = generate_population(10, 7, -5, 5)
-#
-# ahhh = next_generation(poop, 3)
-#
-yeet = selection_roulette(poop, 3)
-#
-eerrm = single_point_crossover(yeet)
-#
-# uniform_mutation(eerrm[0], -5, 5, 3)
-#
-# print("aa")
 
-# for i in range(10):
-#     yeet = sum_squares_compute_fitness(poop[i,:])
-#     print(yeet)
+POPULATION_SIZE = 10
 
-# USE THIS MAIN FUNCTION TO COMPLETE YOUR CODE - MAKE SURE IT WILL RUN FROM COMOND LINE
+GENERATIONS = 500
+SOLUTION_FOUND = False
+
+CROSSOVER_RATE = 0.8
+MUTATION_RATE = 0.2
+
+def sum_squares_compute_fitness(population, target):
+    # Generate a 1D array of indexes from 1 to the individuals size
+    indexes = np.arange(1, population.shape[1] + 1)
+    # Calculate the result based on: sum(ix^2), for each individuals values in the population
+    result = np.sum(indexes * ((np.abs(population[0:,:]) ** 2) * np.sign(population[0:,:])), axis=1)
+    fitness = abs(result[0:,] - target) # Calculate the results absolute distance from desired value
+
+    return fitness
+
+
+def display_population(population):
+    output_table = pd.DataFrame({'Individuals': population.tolist(),
+                                 'Fitness':  sum_squares_compute_fitness(population, 0).tolist()})
+
+    with pd.option_context('display.max_colwidth', -1, 'display.max_colwidth', 400):
+        pd.set_option('colheader_justify', 'center')
+        print(output_table)
+
+
 def main():
     global POPULATION_SIZE
     global GENERATIONS
@@ -117,13 +121,26 @@ def main():
     lower_bound = -5
     upper_bound = 5
 
-    initial_population = generate_population(POPULATION_SIZE, lower_bound, upper_bound)
-    crossover_amount = round(POPULATION_SIZE * CROSSOVER_RATE)
+    population = generate_population(POPULATION_SIZE, 7, lower_bound, upper_bound)
 
-    while (SOLUTION_FOUND):
+    generation_counter = 0
+    while (GENERATIONS > generation_counter):
+        parents = selection_roulette(population, CROSSOVER_RATE)
+        children = single_point_crossover(parents)
+        children = uniform_mutation(children, lower_bound, upper_bound, MUTATION_RATE, 1)
 
+        population = np.vstack((population, children))
+        population = next_generation(population, POPULATION_SIZE)
+
+        generation_counter += 1
 
         continue
+
+    print('')
+    print('   ##########################################################################################################################################')
+    print('   ############################################################ FINAL GENERATION ############################################################')
+    print('   ##########################################################################################################################################')
+    display_population(population)
 
 
 if __name__ == '__main__':
