@@ -4,8 +4,8 @@ import concurrent.futures
 from threading import Lock
 
 
-THREADS = 3 # The amount of threads that will run the EA loop concurrently on the same population
-print_lock = Lock() # Thread lock for the print statments
+THREADS = 20 # The amount of threads that will run the EA loop concurrently on the same population
+print_lock = Lock() # Thread lock for the print statements
 
 POPULATION_SIZE = 10 # The maximum size of the population for each generation
 INDIVIDUAL_SIZE = 7 # The number genes in each individual in the population
@@ -15,7 +15,7 @@ UPPER_BOUND = 5 # The upper limit that a gene value can be
 
 TARGET = 0 # The target value for fitness to be calculated, set to 0 for minimisation solution
 
-GENERATIONS = 100 # The number of generations to run (if using as termination condition)
+GENERATIONS = 10 # The number of generations to run (if using as termination condition)
 SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to produce offspring each generation
@@ -49,8 +49,11 @@ def main_threaded_loop(population, thread_no):
     global MUTATION_RATE
     global MUTATIONS
 
-    # Start a generation counter at 0
-    generation_counter = 0
+    initial_fitness = sum_squares_compute_fitness(population, TARGET)
+    fitness_tracker = [initial_fitness[np.argmin(initial_fitness)]]
+
+    # Start a generation counter at 1
+    generation_counter = 1
     while (GENERATIONS > generation_counter): # Termination condition. Can be set to (!SOLUTION_FOUND) to run until TARGET value is reached
 
         # Choose parents from the initial population based on roulette wheel probability selection
@@ -71,6 +74,9 @@ def main_threaded_loop(population, thread_no):
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
         # until the population is reduced to 'POPULATION_SIZE'
         population = next_generation(population, sum_squares_compute_fitness(population, TARGET), POPULATION_SIZE)
+
+        generation_fitness = sum_squares_compute_fitness(population, TARGET)
+        fitness_tracker.append(generation_fitness[np.argmin(generation_fitness)])
 
         # Check if a solution is found
         # NOTE: this section of code can be commented out if using generational termination condition to increase optimisation
@@ -98,13 +104,19 @@ def main_threaded_loop(population, thread_no):
         print('#############################')
         print('')
 
+    return fitness_tracker
+
 if __name__ == '__main__':
     # Generate initial population given parameters
     initial_population = generate_population(POPULATION_SIZE, INDIVIDUAL_SIZE, LOWER_BOUND, UPPER_BOUND)
 
+    futures = []
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=THREADS) as executor:
         for n in range(THREADS):
-            executor.submit(main_threaded_loop, initial_population, n)
+            futures.append(executor.submit(main_threaded_loop, initial_population, n))
+
+    plot_generation_fittest(GENERATIONS, futures)
 
     print('')
     print('ALL THREADS EXECUTED!')
