@@ -1,5 +1,7 @@
 import random
 import numpy as np
+import pandas as pd
+
 
 def generate_population(population_size, individual_size, lower_bound, upper_bound):
     # Generate empty 2D array of size population_size x individual_size
@@ -63,3 +65,25 @@ def next_generation(previous_population, fitness, population_size):
     next_generation = previous_population[fittest_indexes]
 
     return next_generation
+
+
+def display_population(population, fitness, max_rows):
+    # Generate a dataframe using the population individual values as first column, and their respective fitness as second column
+    output_table = pd.DataFrame({'Individuals': population.tolist(),
+                                 'Fitness':  fitness.tolist()})
+    # Options for pandas set so that all data is visible before printing dataframe
+    with pd.option_context('display.max_colwidth', -1, 'display.max_rows', max_rows):
+        pd.set_option('colheader_justify', 'center')
+        print(output_table)
+
+
+def display_fittest_individual(population, fitness):
+    # Generate a dataframe using the fittest individual in the population with formatting
+    fittest_individual = pd.DataFrame({'Individual': population[np.argmin(fitness)]})
+    fittest_individual['Individual'] = '      ' + fittest_individual['Individual'].astype(str)
+    # Formatting options for pandas before printing data frame
+    with pd.option_context('display.max_colwidth', -1):
+        pd.set_option('colheader_justify', 'center')
+        print(fittest_individual)
+        print('-----------------------------')
+        print('Fitness: ' + fitness[np.argmin(fitness)].astype(str))
