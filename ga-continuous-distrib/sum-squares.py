@@ -1,8 +1,13 @@
 from common import *
 import numpy as np
+import concurrent.futures
+from threading import Lock
 
 
-POPULATION_SIZE = 10000 # The maximum size of the population for each generation
+THREADS = 3 # The amount of threads that will run the EA loop concurrently on the same population
+print_lock = Lock() # Thread lock for the print statments
+
+POPULATION_SIZE = 10 # The maximum size of the population for each generation
 INDIVIDUAL_SIZE = 7 # The number genes in each individual in the population
 
 LOWER_BOUND = -5 # The lower limit that a gene value can be
@@ -28,7 +33,7 @@ def sum_squares_compute_fitness(population, target=0):
     return fitness
 
 
-def main():
+def main_threaded_loop(population, thread_no):
     global POPULATION_SIZE
     global INDIVIDUAL_SIZE
 
@@ -44,10 +49,8 @@ def main():
     global MUTATION_RATE
     global MUTATIONS
 
-    # Generate initial population given parameters
-    population = generate_population(POPULATION_SIZE, INDIVIDUAL_SIZE, LOWER_BOUND, UPPER_BOUND)
-
-    generation_counter = 0 # Start a generation counter at 0
+    # Start a generation counter at 0
+    generation_counter = 0
     while (GENERATIONS > generation_counter): # Termination condition. Can be set to (!SOLUTION_FOUND) to run until TARGET value is reached
 
         # Choose parents from the initial population based on roulette wheel probability selection
@@ -78,19 +81,30 @@ def main():
         generation_counter += 1
         continue
 
-    print('')
-    print('   ##########################################################################################################################################')
-    print('   ############################################################ FINAL GENERATION ############################################################')
-    print('   ##########################################################################################################################################')
-    display_population(population, sum_squares_compute_fitness(population, TARGET), population.shape[0])
-    print('')
-    print('FITTEST INDIVIDUAL')
-    print('#############################')
-    display_fittest_individual(population, sum_squares_compute_fitness(population, TARGET))
-    print('#############################')
+    # Lock threads to print results
+    with print_lock:
+        print('')
+        print('##################################################################################################################################')
+        print('############################################################ THREAD ' + str(thread_no) + ' ############################################################')
+        print('##################################################################################################################################')
+        print('')
+        print('FINAL GENERATION:')
+        display_population(population, sum_squares_compute_fitness(population, TARGET), population.shape[0])
+        print('')
+        print('FITTEST INDIVIDUAL:')
+        print('')
+        print('#############################')
+        display_fittest_individual(population, sum_squares_compute_fitness(population, TARGET))
+        print('#############################')
+        print('')
 
 if __name__ == '__main__':
-    main()
-    
-    
-    
+    # Generate initial population given parameters
+    initial_population = generate_population(POPULATION_SIZE, INDIVIDUAL_SIZE, LOWER_BOUND, UPPER_BOUND)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=THREADS) as executor:
+        for n in range(THREADS):
+            executor.submit(main_threaded_loop, initial_population, n)
+
+    print('')
+    print('ALL THREADS EXECUTED!')
