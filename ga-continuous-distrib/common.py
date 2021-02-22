@@ -35,7 +35,7 @@ def single_point_crossover(parents):
     # This is done for each set of parents in 'parents' 3D array
     # This is done using NumPy horizontal stack: https://numpy.org/doc/stable/reference/generated/numpy.hstack.html
     children[:, 0, :] = np.hstack([parents[:, 0, :crossover_point], parents[:, 1, crossover_point:]]) #TODO: SLICE AT RANDOM CROSSOVER FOR EACH child without loop
-    children[:, 1, :] = np.hstack([parents[:, 1, :crossover_point], parents[:, 0, crossover_point:]])
+    children[:, 1, :] = np.hstack([parents[:, 1, :crossover_point], parents[:, 0, crossover_point:]]) #TODO: OR CREATE ANOTHER METHOD WITH FOR LOOP AND TEST
     # Reshape children array vertically as they no longer need to be in pairs
     children = np.reshape(children, (children.shape[0] * children.shape[1], children.shape[2]))
 
@@ -90,12 +90,28 @@ def display_fittest_individual(population, fitness):
         print('Fitness: ' + fitness[np.argmin(fitness)].astype(str))
 
 
-def plot_generation_fittest(generations, fitness_values):
+def generate_plot(title, generations, fitness_data):
+    # Set axis labels and title
+    plt.title(title)
     plt.xlabel("Generation")
     plt.ylabel("Fittest Individual")
-    for n in range(len(fitness_values)):
-        plt.plot(range(generations), fitness_values[n].result(), label='Thread ' + str(n), color=np.random.rand(3))
-        plt.annotate('%0.2f' % fitness_values[n].result()[-1], xy=(1, fitness_values[n].result()[-1]), xytext=(8, 0),
+    # Plot each thread with a different random colour, and annotate its final gen best fitness value to the left of chart
+    for n in range(len(fitness_data)):
+        plt.plot(range(generations), fitness_data[n], label='Thread ' + str(n), color=np.random.rand(3))
+        plt.annotate('%0.8f' % fitness_data[n][-1], xy=(1, fitness_data[n][-1]), xytext=(8, 0),
                      xycoords=('axes fraction', 'data'), textcoords='offset points')
+    # Thread legend set to above the graph, with max columns set to 5
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=5)
+
+
+def plot_generation_fittest_full(title, generations, fitness_values):
+    # Plot the fitness values against generations for the whole Y range
+    generate_plot(title, generations, fitness_values)
+    plt.show()
+
+
+def plot_generation_fittest_ylim(title, generations, fitness_values, ylim):
+    # Plot the fitness values against generations for a specified Y range limit
+    plt.ylim([0, ylim])
+    generate_plot(title, generations, fitness_values)
     plt.show()

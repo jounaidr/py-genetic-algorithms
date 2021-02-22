@@ -2,25 +2,26 @@ from common import *
 import numpy as np
 import concurrent.futures
 from threading import Lock
+import time
 
 
-THREADS = 20 # The amount of threads that will run the EA loop concurrently on the same population
+THREADS = 5 # The amount of threads that will run the EA loop concurrently on the same population
 print_lock = Lock() # Thread lock for the print statements
 
 POPULATION_SIZE = 10 # The maximum size of the population for each generation
-INDIVIDUAL_SIZE = 7 # The number genes in each individual in the population
 
+INDIVIDUAL_SIZE = 7 # The number genes in each individual in the population
 LOWER_BOUND = -5 # The lower limit that a gene value can be
 UPPER_BOUND = 5 # The upper limit that a gene value can be
-
-TARGET = 0 # The target value for fitness to be calculated, set to 0 for minimisation solution
-
-GENERATIONS = 10 # The number of generations to run (if using as termination condition)
-SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to produce offspring each generation
 MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
 MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation (can be randomised with limits)
+
+TARGET = 0 # The target value for fitness to be calculated, set to 0 for minimisation solution
+
+GENERATIONS = 300 # The number of generations to run (if using as termination condition)
+SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 
 def sum_squares_compute_fitness(population, target=0):
@@ -49,13 +50,25 @@ def main_threaded_loop(population, thread_no):
     global MUTATION_RATE
     global MUTATIONS
 
+    thread_data = [0,[],[]] # List used to store execution time data at index 0, fittest value per gen at index 1 and mean fitness per gen at index 2
+
+    # Calculate the fitness of the initial population and store fittest individual and mean fitness value data
+    # NOTE: the following code can be commented out if data collection is not required
     initial_fitness = sum_squares_compute_fitness(population, TARGET)
-    fitness_tracker = [initial_fitness[np.argmin(initial_fitness)]]
+    thread_data[1].append(initial_fitness[np.argmin(initial_fitness)])
+    thread_data[2].append(np.mean(initial_fitness))
 
     # Start a generation counter at 1
     generation_counter = 1
-    while (GENERATIONS > generation_counter): # Termination condition. Can be set to (!SOLUTION_FOUND) to run until TARGET value is reached
 
+    # Set the start time before EA loop
+    start_time = time.time()
+
+    # Termination condition. Can be set to just (SOLUTION_FOUND == True) to run until TARGET value is reached
+    while (GENERATIONS > generation_counter) or (SOLUTION_FOUND == True):
+        ###############################################################################
+        ######################### EVOLUTIONARY ALGORITHM LOOP #########################
+        ###############################################################################
         # Choose parents from the initial population based on roulette wheel probability selection
         # Will select amount of parents to satisfy the 'CROSSOVER_RATE'
         # If 'multi_selection' set to false, parents can only be chosen once each
@@ -74,25 +87,41 @@ def main_threaded_loop(population, thread_no):
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
         # until the population is reduced to 'POPULATION_SIZE'
         population = next_generation(population, sum_squares_compute_fitness(population, TARGET), POPULATION_SIZE)
+        ###############################################################################
 
+        ###############################################################################
+        ################################ DATA TRACKING ################################
+        ###############################################################################
+        # Calculate the fitness of the current gen population
         generation_fitness = sum_squares_compute_fitness(population, TARGET)
-        fitness_tracker.append(generation_fitness[np.argmin(generation_fitness)])
+
+        # Store fittest individual and mean fitness value data
+        # NOTE: this section can commented out if data collection is not required to increase optimisation
+        thread_data[1].append(generation_fitness[np.argmin(generation_fitness)])
+        thread_data[2].append(np.mean(generation_fitness))
 
         # Check if a solution is found
-        # NOTE: this section of code can be commented out if using generational termination condition to increase optimisation
-        if TARGET in sum_squares_compute_fitness(population, TARGET):
-            TARGET = True
+        if TARGET in generation_fitness:
+            SOLUTION_FOUND = True
 
         # Increment the generation counter before reiterating through loop
         generation_counter += 1
+        ###############################################################################
         continue
 
-    # Lock threads to print results
+    # Calculate the EA loops execution time and store data
+    thread_data[0] = time.time() - start_time
+
+    # After termination condition is met, lock thread and print results before returning data
     with print_lock:
         print('')
         print('##################################################################################################################################')
         print('############################################################ THREAD ' + str(thread_no) + ' ############################################################')
         print('##################################################################################################################################')
+        print('')
+        print('EXECUTION TIME:')
+        print('')
+        print(str(thread_data[0]) + 's')
         print('')
         print('FINAL GENERATION:')
         display_population(population, sum_squares_compute_fitness(population, TARGET), population.shape[0])
@@ -103,20 +132,46 @@ def main_threaded_loop(population, thread_no):
         display_fittest_individual(population, sum_squares_compute_fitness(population, TARGET))
         print('#############################')
         print('')
+        print('EXECUTION TIME:')
+        print(str(thread_data[0]) + 's')
+        print('')
 
-    return fitness_tracker
+    return thread_data
 
 if __name__ == '__main__':
     # Generate initial population given parameters
     initial_population = generate_population(POPULATION_SIZE, INDIVIDUAL_SIZE, LOWER_BOUND, UPPER_BOUND)
 
-    futures = []
-
+    data = [] # Initialise list to store thread_data futures
+    # Initialise a ThreadPoolExecutor with 'THREADS' thread pool size
+    # and execute the 'main_threaded_loop' on each thread in the pool
+    # store the return futures for each thread to be processed later...
     with concurrent.futures.ThreadPoolExecutor(max_workers=THREADS) as executor:
         for n in range(THREADS):
-            futures.append(executor.submit(main_threaded_loop, initial_population, n))
+            data.append(executor.submit(main_threaded_loop, initial_population, n))
 
-    plot_generation_fittest(GENERATIONS, futures)
+
+    execution_time_data = [] # EA loop execution time in seconds
+    fittest_data = [] # Fittest individual in each generation
+    avg_fitness_data = [] # Average (mean) fitness of each generation
+
+    # Unpack the 'data' futures list data for each thread and store in a separate list for each data set
+    for n in range(THREADS):
+        execution_time_data.append(data[n].result()[0])
+        fittest_data.append(data[n].result()[1])
+        avg_fitness_data.append(data[n].result()[2])
+
+    # Plot fittest individual against generations for full fitness range, then from 0 < x < 1 fitness range
+    plot_generation_fittest_full("Fittest Individual Full" , GENERATIONS, fittest_data)
+    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
+    # Plot average fitness against generations for full fitness range, then from 0 < x < 1 fitness range
+    plot_generation_fittest_full("Avg Fitness Full" , GENERATIONS, avg_fitness_data)
+    plot_generation_fittest_ylim("Avg Fitness Limited", GENERATIONS, avg_fitness_data, 1)
 
     print('')
-    print('ALL THREADS EXECUTED!')
+    print('#######################################################################################')
+    print('################################ ALL THREADS EXECUTED! ################################')
+    print('#######################################################################################')
+    print('')
+    print('MEAN EXECUTION TIME: ' + str(np.mean(execution_time_data)) + 's')
+    print('SOLUTION FOUND: ' + str(SOLUTION_FOUND))
