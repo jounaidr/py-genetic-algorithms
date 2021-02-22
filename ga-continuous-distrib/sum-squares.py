@@ -139,8 +139,19 @@ def main_threaded_loop(population, thread_no):
     return thread_data
 
 if __name__ == '__main__':
+    print('')
+    print('#######################################################################################')
+    print('######################### SUM SQUARED EVOLUTIONARY ALGORITHM ##########################')
+    print('#######################################################################################')
+
     # Generate initial population given parameters
     initial_population = generate_population(POPULATION_SIZE, INDIVIDUAL_SIZE, LOWER_BOUND, UPPER_BOUND)
+
+    print('')
+    print('INITIAL POPULATION:')
+    display_population(initial_population, sum_squares_compute_fitness(initial_population, TARGET), initial_population.shape[0])
+    print('')
+    print('STARTING EVOLUTIONARY ALGORITHM THREADS...')
 
     data = [] # Initialise list to store thread_data futures
     # Initialise a ThreadPoolExecutor with 'THREADS' thread pool size
