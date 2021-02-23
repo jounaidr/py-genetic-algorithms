@@ -18,18 +18,16 @@ CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to p
 MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
 MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation (can be randomised with limits)
 
-TARGET = 0 # The target value for fitness to be calculated, set to 0 for minimisation solution
-
 GENERATIONS = 300 # The number of generations to run (if using as termination condition)
 SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 
-def sum_squares_compute_fitness(population, target=0):
+def sum_squares_compute_fitness(population):
     # Generate a 1D array of indexes from 1 to the individuals size
     indexes = np.arange(1, population.shape[1] + 1)
     # Calculate the result based on: sum(ix^2), for each individuals values in the population
     result = np.sum(indexes * ((np.abs(population[0:,:]) ** 2) * np.sign(population[0:,:])), axis=1)
-    fitness = abs(result[0:,] - target) # Calculate the results absolute distance from desired value
+    fitness = abs(result[0:,] - 0) # Calculate the results absolute distance from 0, the minimal solution
 
     return fitness
 
@@ -40,8 +38,6 @@ def main_threaded_loop(population, thread_no):
 
     global LOWER_BOUND
     global UPPER_BOUND
-
-    global TARGET
 
     global GENERATIONS
     global SOLUTION_FOUND
@@ -54,7 +50,7 @@ def main_threaded_loop(population, thread_no):
 
     # Calculate the fitness of the initial population and store fittest individual and mean fitness value data
     # NOTE: the following code can be commented out if data collection is not required
-    initial_fitness = sum_squares_compute_fitness(population, TARGET)
+    initial_fitness = sum_squares_compute_fitness(population)
     thread_data[1].append(initial_fitness[np.argmin(initial_fitness)])
     thread_data[2].append(np.mean(initial_fitness))
 
@@ -64,7 +60,7 @@ def main_threaded_loop(population, thread_no):
     # Set the start time before EA loop
     start_time = time.time()
 
-    # Termination condition. Can be set to just (SOLUTION_FOUND == True) to run until TARGET value is reached
+    # Termination condition. Can be set to just (SOLUTION_FOUND == True) to run until solution is found
     while (GENERATIONS > generation_counter) or (SOLUTION_FOUND == True):
         ###############################################################################
         ######################### EVOLUTIONARY ALGORITHM LOOP #########################
@@ -72,7 +68,7 @@ def main_threaded_loop(population, thread_no):
         # Choose parents from the initial population based on roulette wheel probability selection
         # Will select amount of parents to satisfy the 'CROSSOVER_RATE'
         # If 'multi_selection' set to false, parents can only be chosen once each
-        parents = selection_roulette(population, sum_squares_compute_fitness(population, TARGET), CROSSOVER_RATE, multi_selection=True)
+        parents = selection_roulette(population, sum_squares_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
 
         # Complete crossover of parents to produce their offspring
         # 'single_point_crossover' will choose 1 random position in each parents genome to crossover at
@@ -86,14 +82,14 @@ def main_threaded_loop(population, thread_no):
 
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
         # until the population is reduced to 'POPULATION_SIZE'
-        population = next_generation(population, sum_squares_compute_fitness(population, TARGET), POPULATION_SIZE)
+        population = next_generation(population, sum_squares_compute_fitness(population), POPULATION_SIZE)
         ###############################################################################
 
         ###############################################################################
         ################################ DATA TRACKING ################################
         ###############################################################################
         # Calculate the fitness of the current gen population
-        generation_fitness = sum_squares_compute_fitness(population, TARGET)
+        generation_fitness = sum_squares_compute_fitness(population)
 
         # Store fittest individual and mean fitness value data
         # NOTE: this section can commented out if data collection is not required to increase optimisation
@@ -101,7 +97,7 @@ def main_threaded_loop(population, thread_no):
         thread_data[2].append(np.mean(generation_fitness))
 
         # Check if a solution is found
-        if TARGET in generation_fitness:
+        if 0 in generation_fitness:
             SOLUTION_FOUND = True
 
         # Increment the generation counter before reiterating through loop
@@ -124,12 +120,12 @@ def main_threaded_loop(population, thread_no):
         print(str(thread_data[0]) + 's')
         print('')
         print('FINAL GENERATION:')
-        display_population(population, sum_squares_compute_fitness(population, TARGET), population.shape[0])
+        display_population(population, sum_squares_compute_fitness(population), population.shape[0])
         print('')
         print('FITTEST INDIVIDUAL:')
         print('')
         print('#############################')
-        display_fittest_individual(population, sum_squares_compute_fitness(population, TARGET))
+        display_fittest_individual(population, sum_squares_compute_fitness(population))
         print('#############################')
         print('')
         print('EXECUTION TIME:')
@@ -149,7 +145,7 @@ if __name__ == '__main__':
 
     print('')
     print('INITIAL POPULATION:')
-    display_population(initial_population, sum_squares_compute_fitness(initial_population, TARGET), initial_population.shape[0])
+    display_population(initial_population, sum_squares_compute_fitness(initial_population), initial_population.shape[0])
     print('')
     print('STARTING EVOLUTIONARY ALGORITHM THREADS...')
 
