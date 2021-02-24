@@ -10,24 +10,27 @@ print_lock = Lock() # Thread lock for the print statements
 
 POPULATION_SIZE = 10 # The maximum size of the population for each generation
 
-INDIVIDUAL_SIZE = 10 # The number genes in each individual in the population
-LOWER_BOUND = -10 # The lower limit that a gene value can be, default = -10
-UPPER_BOUND = 10 # The upper limit that a gene value can be, default = 10
+INDIVIDUAL_SIZE = 10 # The number genes in each individual in the population, global minima at: 2,5,10
+LOWER_BOUND = 0 # The lower limit that a gene value can be, default = 0
+UPPER_BOUND = np.pi # The upper limit that a gene value can be, default = pi
+
+TARGET = -9.66015 # for INDIVIDUAL_SIZE = 2,5,10, TARGET =  -1.8013, -4.687658, -9.66015 respectively
+STEEPNESS = 10 # Steepness of valleys and ridges, larger value increases search difficulty, default = 10
 
 CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to produce offspring each generation
 MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
 MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation (can be randomised with limits)
 
-GENERATIONS = 300 # The number of generations to run (if using as termination condition)
+GENERATIONS = 10000 # The number of generations to run (if using as termination condition)
 SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 
-def sum_squares_compute_fitness(population):
+def michalewicz_compute_fitness(population):
     # Generate a 1D array of indexes from 1 to the individuals size
     i = np.arange(1, population.shape[1] + 1)
-    # Calculate the result based on: sum(ix^2), for each individuals values in the population
-    result = np.sum(i * ((np.abs(population[0:,]) ** 2) * np.sign(population[0:,])), axis=1)
-    fitness = abs(result[0:,] - 0) # Calculate the results absolute distance from 0, the minimal solution
+
+    result = -np.sum(np.sin(population[0:,]) * (np.sin((i * population[0:,] ** 2) / np.pi) ** (2 * STEEPNESS)), axis=1)
+    fitness = abs(result[0:,] - TARGET) # Calculate the results absolute distance from target, the minimal solution
 
     return fitness
 
@@ -50,7 +53,7 @@ def main_threaded_loop(population, thread_no):
 
     # Calculate the fitness of the initial population and store fittest individual and mean fitness value data
     # NOTE: the following code can be commented out if data collection is not required
-    initial_fitness = sum_squares_compute_fitness(population)
+    initial_fitness = michalewicz_compute_fitness(population)
     thread_data[1].append(initial_fitness[np.argmin(initial_fitness)])
     thread_data[2].append(np.mean(initial_fitness))
 
@@ -68,7 +71,7 @@ def main_threaded_loop(population, thread_no):
         # Choose parents from the initial population based on roulette wheel probability selection
         # Will select amount of parents to satisfy the 'CROSSOVER_RATE'
         # If 'multi_selection' set to false, parents can only be chosen once each
-        parents = selection_roulette(population, sum_squares_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
+        parents = selection_roulette(population, michalewicz_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
 
         # Complete crossover of parents to produce their offspring
         # 'single_point_crossover' will choose 1 random position in each parents genome to crossover at
@@ -82,14 +85,14 @@ def main_threaded_loop(population, thread_no):
 
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
         # until the population is reduced to 'POPULATION_SIZE'
-        population = next_generation(population, sum_squares_compute_fitness(population), POPULATION_SIZE)
+        population = next_generation(population, michalewicz_compute_fitness(population), POPULATION_SIZE)
         ###############################################################################
 
         ###############################################################################
         ################################ DATA TRACKING ################################
         ###############################################################################
         # Calculate the fitness of the current gen population
-        generation_fitness = sum_squares_compute_fitness(population)
+        generation_fitness = michalewicz_compute_fitness(population)
 
         # Store fittest individual and mean fitness value data
         # NOTE: this section can commented out if data collection is not required to increase optimisation
@@ -97,7 +100,11 @@ def main_threaded_loop(population, thread_no):
         thread_data[2].append(np.mean(generation_fitness))
 
         # Check if a solution is found
-        if 0 in generation_fitness:
+        if (INDIVIDUAL_SIZE == 2) and (-1.8013 in generation_fitness):
+            SOLUTION_FOUND = True
+        if (INDIVIDUAL_SIZE == 5) and (-4.687658 in generation_fitness):
+            SOLUTION_FOUND = True
+        if (INDIVIDUAL_SIZE == 10) and (-9.66015 in generation_fitness):
             SOLUTION_FOUND = True
 
         # Increment the generation counter before reiterating through loop
@@ -120,12 +127,12 @@ def main_threaded_loop(population, thread_no):
         print(str(thread_data[0]) + 's')
         print('')
         print('FINAL GENERATION:')
-        display_population(population, sum_squares_compute_fitness(population), population.shape[0])
+        display_population(population, michalewicz_compute_fitness(population), population.shape[0])
         print('')
         print('FITTEST INDIVIDUAL:')
         print('')
         print('#############################')
-        display_fittest_individual(population, sum_squares_compute_fitness(population))
+        display_fittest_individual(population, michalewicz_compute_fitness(population))
         print('#############################')
         print('')
         print('EXECUTION TIME:')
@@ -137,7 +144,7 @@ def main_threaded_loop(population, thread_no):
 if __name__ == '__main__':
     print('')
     print('#######################################################################################')
-    print('######################### SUM SQUARED EVOLUTIONARY ALGORITHM ##########################')
+    print('######################### MICHALEWICZ EVOLUTIONARY ALGORITHM ##########################')
     print('#######################################################################################')
 
     # Generate initial population given parameters
@@ -145,7 +152,7 @@ if __name__ == '__main__':
 
     print('')
     print('INITIAL POPULATION:')
-    display_population(initial_population, sum_squares_compute_fitness(initial_population), initial_population.shape[0])
+    display_population(initial_population, michalewicz_compute_fitness(initial_population), initial_population.shape[0])
     print('')
     print('STARTING EVOLUTIONARY ALGORITHM THREADS...')
 
