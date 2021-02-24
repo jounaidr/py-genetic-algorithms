@@ -28,7 +28,7 @@ SOLUTION_FOUND = False # Whether an exact solution has been found (if using as t
 def michalewicz_compute_fitness(population):
     # Generate a 1D array of indexes from 1 to the individuals size
     i = np.arange(1, population.shape[1] + 1)
-
+    # Calculate the result based on: -sum(sin(x) * (sin((ix^2) / pi)^2*STEEPNESS)), for each individuals values in the population
     result = -np.sum(np.sin(population[0:,]) * (np.sin((i * population[0:,] ** 2) / np.pi) ** (2 * STEEPNESS)), axis=1)
     fitness = abs(result[0:,] - TARGET) # Calculate the results absolute distance from target, the minimal solution
 

@@ -10,28 +10,29 @@ print_lock = Lock() # Thread lock for the print statements
 
 POPULATION_SIZE = 100 # The maximum size of the population for each generation
 
-INDIVIDUAL_SIZE = 10 # The number genes in each individual in the population
-LOWER_BOUND = -500 # The lower limit that a gene value can be, default = -500
-UPPER_BOUND = 500 # The upper limit that a gene value can be, default = 500
+LOWER_BOUND = [-15, -3] # The lower limit that [x1, x2] gene values can be, default = [-15, -3] OR -15
+UPPER_BOUND = [-5, 3] # The upper limit that [x1, x2] gene values can be, default = [-5, 3] OR 3
 
 CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to produce offspring each generation
 MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
-MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation (can be randomised with limits)
+MUTATIONS = 2 # The number of genes that are mutated if an offspring is selected for mutation, MUST BE 2 IF USING SEPARATE [x1, x2] BOUNDS!
 
-GENERATIONS = 1000 # The number of generations to run (if using as termination condition)
+GENERATIONS = 10000 # The number of generations to run (if using as termination condition)
 SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 
-def schwefel_compute_fitness(population):
-    # Calculate the result based on: 418.9829*POPULATION_SIZE - sum(x*sin(sqrt(abs(x)))), for each individuals values in the population
-    result = (418.9829 * population.shape[1]) - np.sum((population[0:,] * np.sin(np.sqrt(np.abs(population[0:,])))), axis=1)
+def bukin_compute_fitness(population):
+    # Generate a 1D array of indexes from 1 to the individuals size
+
+    result = (100 * np.sqrt(np.abs(population[:,1] - (0.01 * (population[:,0] ** 2))))) + (0.01 * np.abs(population[:,0] + 10))
+
     fitness = abs(result[0:,] - 0) # Calculate the results absolute distance from 0, the minimal solution
 
     return fitness
 
+
 def main_threaded_loop(population, thread_no):
     global POPULATION_SIZE
-    global INDIVIDUAL_SIZE
 
     global LOWER_BOUND
     global UPPER_BOUND
@@ -47,7 +48,7 @@ def main_threaded_loop(population, thread_no):
 
     # Calculate the fitness of the initial population and store fittest individual and mean fitness value data
     # NOTE: the following code can be commented out if data collection is not required
-    initial_fitness = schwefel_compute_fitness(population)
+    initial_fitness = bukin_compute_fitness(population)
     thread_data[1].append(initial_fitness[np.argmin(initial_fitness)])
     thread_data[2].append(np.mean(initial_fitness))
 
@@ -65,7 +66,7 @@ def main_threaded_loop(population, thread_no):
         # Choose parents from the initial population based on roulette wheel probability selection
         # Will select amount of parents to satisfy the 'CROSSOVER_RATE'
         # If 'multi_selection' set to false, parents can only be chosen once each
-        parents = selection_roulette(population, schwefel_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
+        parents = selection_roulette(population, bukin_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
 
         # Complete crossover of parents to produce their offspring
         # 'single_point_crossover' will choose 1 random position in each parents genome to crossover at
@@ -74,19 +75,19 @@ def main_threaded_loop(population, thread_no):
         # Mutate the children using a random gene with random value with LOWER_BOUND < x < UPPER_BOUND range
         # The chance a child will be mutated is specified using 'MUTATION_RATE'
         # The amount of genes to mutate is specified using 'MUTATIONS'
-        children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
+        children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS) #TODO: OPTIMISE SO THAT ONLY 1 GENE IS SELECTED FOR MUTATION
         population = np.vstack((population, children)) # Add the mutated children back into the population
 
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
         # until the population is reduced to 'POPULATION_SIZE'
-        population = next_generation(population, schwefel_compute_fitness(population), POPULATION_SIZE)
+        population = next_generation(population, bukin_compute_fitness(population), POPULATION_SIZE)
         ###############################################################################
 
         ###############################################################################
         ################################ DATA TRACKING ################################
         ###############################################################################
         # Calculate the fitness of the current gen population
-        generation_fitness = schwefel_compute_fitness(population)
+        generation_fitness = bukin_compute_fitness(population)
 
         # Store fittest individual and mean fitness value data
         # NOTE: this section can commented out if data collection is not required to increase optimisation
@@ -117,12 +118,12 @@ def main_threaded_loop(population, thread_no):
         print(str(thread_data[0]) + 's')
         print('')
         print('FINAL GENERATION:')
-        display_population(population, schwefel_compute_fitness(population), population.shape[0])
+        display_population(population, bukin_compute_fitness(population), population.shape[0])
         print('')
         print('FITTEST INDIVIDUAL:')
         print('')
         print('#############################')
-        display_fittest_individual(population, schwefel_compute_fitness(population))
+        display_fittest_individual(population, bukin_compute_fitness(population))
         print('#############################')
         print('')
         print('EXECUTION TIME:')
@@ -134,15 +135,15 @@ def main_threaded_loop(population, thread_no):
 if __name__ == '__main__':
     print('')
     print('#######################################################################################')
-    print('########################### SCHWEFEL EVOLUTIONARY ALGORITHM ###########################')
+    print('##################### BUKIN FUNCTION N.6 EVOLUTIONARY ALGORITHM #######################')
     print('#######################################################################################')
 
-    # Generate initial population given parameters
-    initial_population = generate_population(POPULATION_SIZE, INDIVIDUAL_SIZE, LOWER_BOUND, UPPER_BOUND)
+    # Generate initial population given parameters, function only takes 2 dimensions so individual_size hardcoded at 2
+    initial_population = generate_population(POPULATION_SIZE, 2, LOWER_BOUND, UPPER_BOUND)
 
     print('')
     print('INITIAL POPULATION:')
-    display_population(initial_population, schwefel_compute_fitness(initial_population), initial_population.shape[0])
+    display_population(initial_population, bukin_compute_fitness(initial_population), initial_population.shape[0])
     print('')
     print('STARTING EVOLUTIONARY ALGORITHM THREADS...')
 
@@ -165,16 +166,12 @@ if __name__ == '__main__':
         fittest_data.append(data[n].result()[1])
         avg_fitness_data.append(data[n].result()[2])
 
-    # Plot fittest individual against generations for full fitness range, then from 0 < x < 10 and 0 < x < 1 fitness range
+    # Plot fittest individual against generations for full fitness range, then from 0 < x < 1 fitness range
     plot_generation_fittest_full("Fittest Individual Full" , GENERATIONS, fittest_data)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 10)
     plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
-    # Plot average fitness against generations for full fitness range, then from 0 < x < 10 and 0 < x < 1 fitness range
+    # Plot average fitness against generations for full fitness range, then from 0 < x < 1 fitness range
     plot_generation_fittest_full("Avg Fitness Full" , GENERATIONS, avg_fitness_data)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 10)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, .1)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, .01)
+    plot_generation_fittest_ylim("Avg Fitness Limited", GENERATIONS, avg_fitness_data, 1)
 
     print('')
     print('#######################################################################################')
