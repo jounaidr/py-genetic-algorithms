@@ -73,7 +73,7 @@ def main_threaded_loop(population, thread_no):
 
         # Complete crossover of parents to produce their offspring
         # 'single_point_crossover' will choose 1 random position in each parents genome to crossover at
-        children = single_point_crossover(parents)
+        children = single_point_crossover_opt(parents)
 
         # Mutate the children using a random gene with random value with LOWER_BOUND < x < UPPER_BOUND range
         # The chance a child will be mutated is specified using 'MUTATION_RATE'

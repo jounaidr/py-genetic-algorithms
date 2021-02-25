@@ -27,15 +27,30 @@ def selection_roulette(population, fitness, crossover_rate, multi_selection=True
     return parents
 
 
-def single_point_crossover(parents):
+def single_point_crossover_opt(parents):
     children = np.zeros_like(parents)  # Generate an empty array for the children the same shape as 'parents' array
-    crossover_point = random.randrange(1, parents.shape[2])  # Get a random index within the individuals index range
+    crossover_point = random.randrange(1, children.shape[2])  # Get a random index within the individuals index range
     # First child takes values from first parent up to crossover point, then the rest of the values from second parent
     # Second child takes values from second parent up to crossover point, then the rest of the values from first parent
     # This is done for each set of parents in 'parents' 3D array
     # This is done using NumPy horizontal stack: https://numpy.org/doc/stable/reference/generated/numpy.hstack.html
-    children[:, 0, :] = np.hstack([parents[:, 0, :crossover_point], parents[:, 1, crossover_point:]]) #TODO: SLICE AT RANDOM CROSSOVER FOR EACH child without loop
-    children[:, 1, :] = np.hstack([parents[:, 1, :crossover_point], parents[:, 0, crossover_point:]]) #TODO: OR CREATE ANOTHER METHOD WITH FOR LOOP AND TEST
+    children[:, 0, :] = np.hstack([parents[:, 0, :crossover_point], parents[:, 1, crossover_point:]])
+    children[:, 1, :] = np.hstack([parents[:, 1, :crossover_point], parents[:, 0, crossover_point:]])
+    # Reshape children array vertically as they no longer need to be in pairs
+    children = np.reshape(children, (children.shape[0] * children.shape[1], children.shape[2]))
+
+    return children
+
+def single_point_crossover_multi_index(parents):
+    children = np.zeros_like(parents)  # Generate an empty array for the children the same shape as 'parents' array
+    crossover_points = np.random.choice(range(1, children.shape[2]),  children.shape[0]) # Get a set of random indexes within the individuals index range
+    # First child takes values from first parent up to crossover point, then the rest of the values from second parent
+    # Second child takes values from second parent up to crossover point, then the rest of the values from first parent
+    # This is done for each set of parents in 'parents' 3D array, with a different crossover point for each
+    # This is done using NumPy horizontal stack: https://numpy.org/doc/stable/reference/generated/numpy.hstack.html
+    for i in range(children.shape[0]):
+        children[i, 0, :] = np.hstack([parents[i, 0, :crossover_points[i]], parents[i, 1, crossover_points[i]:]])
+        children[i, 1, :] = np.hstack([parents[i, 1, :crossover_points[i]], parents[i, 0, crossover_points[i]:]])
     # Reshape children array vertically as they no longer need to be in pairs
     children = np.reshape(children, (children.shape[0] * children.shape[1], children.shape[2]))
 

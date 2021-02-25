@@ -8,7 +8,7 @@ import time
 THREADS = 5 # The amount of threads that will run the EA loop concurrently on the same population
 print_lock = Lock() # Thread lock for the print statements
 
-POPULATION_SIZE = 10 # The maximum size of the population for each generation
+POPULATION_SIZE = 1000 # The maximum size of the population for each generation
 
 INDIVIDUAL_SIZE = 10 # The number genes in each individual in the population
 LOWER_BOUND = -10 # The lower limit that a gene value can be, default = -10
@@ -18,7 +18,7 @@ CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to p
 MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
 MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation (can be randomised with limits)
 
-GENERATIONS = 300 # The number of generations to run (if using as termination condition)
+GENERATIONS = 1000 # The number of generations to run (if using as termination condition)
 SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 
@@ -72,7 +72,7 @@ def main_threaded_loop(population, thread_no):
 
         # Complete crossover of parents to produce their offspring
         # 'single_point_crossover' will choose 1 random position in each parents genome to crossover at
-        children = single_point_crossover(parents)
+        children = single_point_crossover_opt(parents)
 
         # Mutate the children using a random gene with random value with LOWER_BOUND < x < UPPER_BOUND range
         # The chance a child will be mutated is specified using 'MUTATION_RATE'
