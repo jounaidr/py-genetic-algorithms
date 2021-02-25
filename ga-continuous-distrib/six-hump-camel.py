@@ -8,7 +8,7 @@ import time
 THREADS = 5 # The amount of threads that will run the EA loop concurrently on the same population
 print_lock = Lock() # Thread lock for the print statements
 
-POPULATION_SIZE = 100 # The maximum size of the population for each generation
+POPULATION_SIZE = 10 # The maximum size of the population for each generation
 
 LOWER_BOUND = [-3, -2] # The lower limit that [x1, x2] gene values can be, default = [-3, -2] OR -3
 UPPER_BOUND = [3, 2] # The upper limit that [x1, x2] gene values can be, default = [3, 2] OR 2
@@ -25,9 +25,9 @@ SOLUTION_FOUND = False # Whether an exact solution has been found (if using as t
 
 def camel_compute_fitness(population):
     # Calculate the result based on: ((4-2.1*x1^2+(x1^4)/3) * x1^2) + (x1*x2) + ((-4+4*x2^2) * x2^2), for each individuals values in the population
-    result = ((4 - ((2.1 * population[:,0]) ** 2) + ((population[:,0] ** 4)/3)) * (population[:,0] ** 2)) \
-             + (population[:,0] * population[:,1]) \
-             + (-4 + ((4 * population[:,1]) ** 2) * (population[:,1] ** 2))
+    result = ((4 - (2.1 * (population[:,0] ** 2)) + ((population[:,0] ** 4) / 3)) * (population[:,0] ** 2)) \
+           + (population[:,0] * population[:,1]) \
+           + (-4 + (4 * (population[:,1] ** 2))) * (population[:,1] ** 2)
 
     fitness = abs(result[0:,] - TARGET) # Calculate the results absolute distance from TARGET, the minimal solution
 
@@ -170,11 +170,11 @@ if __name__ == '__main__':
         avg_fitness_data.append(data[n].result()[2])
 
     # Plot fittest individual against generations for full fitness range, then from 0 < x < 1 fitness range
-    plot_generation_fittest_full("Fittest Individual Full" , GENERATIONS, fittest_data)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
+    plot_data_full("Fittest Individual Full", GENERATIONS, fittest_data)
+    plot_data_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
     # Plot average fitness against generations for full fitness range, then from 0 < x < 1 fitness range
-    plot_generation_fittest_full("Avg Fitness Full" , GENERATIONS, avg_fitness_data)
-    plot_generation_fittest_ylim("Avg Fitness Limited", GENERATIONS, avg_fitness_data, 1)
+    plot_data_full("Avg Fitness Full", GENERATIONS, avg_fitness_data)
+    plot_data_ylim("Avg Fitness Limited", GENERATIONS, avg_fitness_data, 1)
 
     print('')
     print('#######################################################################################')

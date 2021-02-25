@@ -166,15 +166,15 @@ if __name__ == '__main__':
         avg_fitness_data.append(data[n].result()[2])
 
     # Plot fittest individual against generations for full fitness range, then from 0 < x < 10 and 0 < x < 1 fitness range
-    plot_generation_fittest_full("Fittest Individual Full" , GENERATIONS, fittest_data)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 10)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
+    plot_data_full("Fittest Individual Full", GENERATIONS, fittest_data)
+    plot_data_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 10)
+    plot_data_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
     # Plot average fitness against generations for full fitness range, then from 0 < x < 10 and 0 < x < 1 fitness range
-    plot_generation_fittest_full("Avg Fitness Full" , GENERATIONS, avg_fitness_data)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 10)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, .1)
-    plot_generation_fittest_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, .01)
+    plot_data_full("Avg Fitness Full", GENERATIONS, avg_fitness_data)
+    plot_data_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 10)
+    plot_data_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
+    plot_data_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, .1)
+    plot_data_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, .01)
 
     print('')
     print('#######################################################################################')

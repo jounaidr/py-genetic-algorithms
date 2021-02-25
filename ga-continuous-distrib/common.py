@@ -104,13 +104,13 @@ def generate_plot(title, generations, fitness_data):
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=5)
 
 
-def plot_generation_fittest_full(title, generations, fitness_values):
+def plot_data_full(title, generations, fitness_values):
     # Plot the fitness values against generations for the whole Y range
     generate_plot(title, generations, fitness_values)
     plt.show()
 
 
-def plot_generation_fittest_ylim(title, generations, fitness_values, ylim):
+def plot_data_ylim(title, generations, fitness_values, ylim):
     # Plot the fitness values against generations for a specified Y range limit
     plt.ylim([0, ylim])
     generate_plot(title, generations, fitness_values)
