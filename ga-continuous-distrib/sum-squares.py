@@ -8,7 +8,7 @@ import time
 THREADS = 5 # The amount of threads that will run the EA loop concurrently on the same population
 print_lock = Lock() # Thread lock for the print statements
 
-POPULATION_SIZE = 1000 # The maximum size of the population for each generation
+POPULATION_SIZE = 100 # The maximum size of the population for each generation
 
 INDIVIDUAL_SIZE = 10 # The number genes in each individual in the population
 LOWER_BOUND = -10 # The lower limit that a gene value can be, default = -10

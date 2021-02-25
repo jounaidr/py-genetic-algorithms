@@ -72,6 +72,21 @@ def uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutation
 
     return children
 
+def boundary_mutation(children, lower_bound, upper_bound, mutation_rate, mutations):
+    # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
+    children_selection = np.random.choice(a=[True, False], size=children.shape[0], p=[mutation_rate, 1 - mutation_rate])
+    children_to_mutate = children[children_selection, :]
+    # Randomly choose indexes for each 'children_to_mutate' (which correspond to individuals 'genes') within the individuals range,
+    # for the given amount of 'mutations'
+    mutation_indexes = np.random.choice(a=children_to_mutate.shape[1], size=(children_to_mutate.shape[0], mutations))
+    # Replace the chosen indexes with either the upper or lower bound, for each child selected for mutation
+    mutated_genes = np.random.choice(a=[lower_bound, upper_bound], size=(children_to_mutate.shape[0], mutations))
+    children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes] = mutated_genes
+    # Add the mutated children back into the 'children' array before returning them
+    children = np.vstack((children, children_to_mutate))
+
+    return children
+
 
 def next_generation(previous_population, fitness, population_size):
     # Get indexes that correspond to the lowest fitness values for the amount specified by 'population_size'
