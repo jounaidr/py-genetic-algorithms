@@ -41,7 +41,7 @@ def main_threaded_loop(population, thread_no):
     global UPPER_BOUND
 
     global GENERATIONS
-    global SOLUTION_FOUND
+    global SOLUTION_FOUND # Replace with local variable: SOLUTION_FOUND = False, to not stop other threads if solution is found in one thread
 
     global CROSSOVER_RATE
     global MUTATION_RATE

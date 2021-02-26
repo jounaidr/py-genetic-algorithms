@@ -4,6 +4,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
+###############################################################################
+####################### POPULATION GENERATION FUNCTIONS #######################
+###############################################################################
+
+
 def generate_population(population_size, individual_size, lower_bound, upper_bound):
     # Generate empty 2D array of size population_size x individual_size
     population = np.zeros((population_size, individual_size))
@@ -12,6 +17,11 @@ def generate_population(population_size, individual_size, lower_bound, upper_bou
         population[i,] = np.random.uniform(lower_bound, upper_bound, (individual_size))
 
     return population
+
+
+###############################################################################
+############################# SELECTION FUNCTIONS #############################
+###############################################################################
 
 
 def selection_roulette(population, fitness, crossover_rate, multi_selection=True):
@@ -27,6 +37,11 @@ def selection_roulette(population, fitness, crossover_rate, multi_selection=True
     return parents
 
 
+###############################################################################
+############################# CROSSOVER FUNCTIONS #############################
+###############################################################################
+
+
 def single_point_crossover_opt(parents):
     children = np.zeros_like(parents)  # Generate an empty array for the children the same shape as 'parents' array
     crossover_point = random.randrange(1, children.shape[2])  # Get a random index within the individuals index range
@@ -40,6 +55,7 @@ def single_point_crossover_opt(parents):
     children = np.reshape(children, (children.shape[0] * children.shape[1], children.shape[2]))
 
     return children
+
 
 def single_point_crossover_multi_index(parents):
     children = np.zeros_like(parents)  # Generate an empty array for the children the same shape as 'parents' array
@@ -57,6 +73,11 @@ def single_point_crossover_multi_index(parents):
     return children
 
 
+###############################################################################
+############################## MUTATION FUNCTIONS #############################
+###############################################################################
+
+
 def uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutations):
     # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
     children_selection = np.random.choice(a=[True, False], size=children.shape[0], p=[mutation_rate, 1 - mutation_rate])
@@ -71,6 +92,7 @@ def uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutation
     children = np.vstack((children, children_to_mutate))
 
     return children
+
 
 def non_uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutations, fitness, fitness_threshold=1):
     # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
@@ -100,6 +122,7 @@ def non_uniform_mutation(children, lower_bound, upper_bound, mutation_rate, muta
 
     return children
 
+
 def boundary_mutation(children, lower_bound, upper_bound, mutation_rate, mutations):
     # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
     children_selection = np.random.choice(a=[True, False], size=children.shape[0], p=[mutation_rate, 1 - mutation_rate])
@@ -116,6 +139,11 @@ def boundary_mutation(children, lower_bound, upper_bound, mutation_rate, mutatio
     return children
 
 
+###############################################################################
+############################## SURVIVE FUNCTIONS ##############################
+###############################################################################
+
+
 def next_generation(previous_population, fitness, population_size):
     # Get indexes that correspond to the lowest fitness values for the amount specified by 'population_size'
     # This is done using NumPy 'argpartition' that has linear complexity: https://numpy.org/doc/stable/reference/generated/numpy.argpartition.html
@@ -124,6 +152,11 @@ def next_generation(previous_population, fitness, population_size):
     next_generation = previous_population[fittest_indexes]
 
     return next_generation
+
+
+###############################################################################
+########################### DATA PLOTTING FUNCTIONS ###########################
+###############################################################################
 
 
 def display_population(population, fitness, max_rows):

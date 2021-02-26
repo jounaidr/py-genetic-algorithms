@@ -5,7 +5,7 @@ from threading import Lock
 import time
 
 
-THREADS = 5 # The amount of threads that will run the EA loop concurrently on the same population
+THREADS = 20 # The amount of threads that will run the EA loop concurrently on the same population
 print_lock = Lock() # Thread lock for the print statements
 
 POPULATION_SIZE = 100 # The maximum size of the population for each generation
@@ -40,7 +40,7 @@ def main_threaded_loop(population, thread_no):
     global UPPER_BOUND
 
     global GENERATIONS
-    global SOLUTION_FOUND
+    global SOLUTION_FOUND # Replace with local variable: SOLUTION_FOUND = False, to not stop other threads if solution is found in one thread
 
     global CROSSOVER_RATE
     global MUTATION_RATE
@@ -77,8 +77,8 @@ def main_threaded_loop(population, thread_no):
         # Mutate the children using a random gene with random value with LOWER_BOUND < x < UPPER_BOUND range
         # The chance a child will be mutated is specified using 'MUTATION_RATE'
         # The amount of genes to mutate is specified using 'MUTATIONS'
-        children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
-        #children = non_uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS, sum_squares_compute_fitness(population))
+        #children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
+        children = non_uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS, sum_squares_compute_fitness(population))
         population = np.vstack((population, children)) # Add the mutated children back into the population
 
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
