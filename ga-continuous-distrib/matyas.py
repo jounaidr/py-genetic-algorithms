@@ -177,5 +177,13 @@ if __name__ == '__main__':
     print('################################ ALL THREADS EXECUTED! ################################')
     print('#######################################################################################')
     print('')
+
+    for n in range(THREADS):
+        print('THREAD: ' + str(n) + ' GENERATIONS: ' + str(len(fittest_data[n])), end="")
+        if 0 in fittest_data[n]:
+            print(', SOLUTION IN THREAD!')
+        else:
+            print()
+
+    print('')
     print('MEAN EXECUTION TIME: ' + str(np.mean(execution_time_data)) + 's')
-    print('SOLUTION FOUND: ' + str(SOLUTION_FOUND))

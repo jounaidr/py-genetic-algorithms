@@ -72,7 +72,7 @@ def uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutation
 
     return children
 
-def non_uniform_mutation(children, fitness, lower_bound, upper_bound, mutation_rate, mutations):
+def non_uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutations, fitness, fitness_threshold=1):
     # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
     children_selection = np.random.choice(a=[True, False], size=children.shape[0], p=[mutation_rate, 1 - mutation_rate])
     children_to_mutate = children[children_selection, :]
@@ -82,7 +82,7 @@ def non_uniform_mutation(children, fitness, lower_bound, upper_bound, mutation_r
     # If the average fitness is greater than 1, replace the chosen indexes with random real values within the specified bounds,
     # else replace with a proportional random value based of the average fitness,
     # for each child selected for mutation np.mean(generation_fitness)
-    if np.mean(fitness) > 1:
+    if np.mean(fitness) > fitness_threshold:
         mutated_genes = np.random.uniform(lower_bound, upper_bound, (children_to_mutate.shape[0], mutations))
         children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes] = mutated_genes
     else:

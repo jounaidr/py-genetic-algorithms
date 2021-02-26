@@ -77,8 +77,8 @@ def main_threaded_loop(population, thread_no):
         # Mutate the children using a random gene with random value with LOWER_BOUND < x < UPPER_BOUND range
         # The chance a child will be mutated is specified using 'MUTATION_RATE'
         # The amount of genes to mutate is specified using 'MUTATIONS'
-        #children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
-        children = non_uniform_mutation(children, sum_squares_compute_fitness(population), LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
+        children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
+        #children = non_uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS, sum_squares_compute_fitness(population))
         population = np.vstack((population, children)) # Add the mutated children back into the population
 
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
@@ -184,5 +184,13 @@ if __name__ == '__main__':
     print('################################ ALL THREADS EXECUTED! ################################')
     print('#######################################################################################')
     print('')
+
+    for n in range(THREADS):
+        print('THREAD: ' + str(n) + ' GENERATIONS: ' + str(len(fittest_data[n])), end="")
+        if 0 in fittest_data[n]:
+            print(', SOLUTION IN THREAD!')
+        else:
+            print()
+
+    print('')
     print('MEAN EXECUTION TIME: ' + str(np.mean(execution_time_data)) + 's')
-    print('SOLUTION FOUND: ' + str(SOLUTION_FOUND))
