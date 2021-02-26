@@ -61,8 +61,8 @@ def main_threaded_loop(population, thread_no):
     # Set the start time before EA loop
     start_time = time.time()
 
-    # Termination condition. Can be set to just (SOLUTION_FOUND == True) to run until solution is found
-    while (GENERATIONS > generation_counter) or (SOLUTION_FOUND == True):
+    # Termination condition. Can be set to just (SOLUTION_FOUND == False) to run until solution is found
+    while (GENERATIONS > generation_counter) and (SOLUTION_FOUND == False):
         ###############################################################################
         ######################### EVOLUTIONARY ALGORITHM LOOP #########################
         ###############################################################################
@@ -170,11 +170,11 @@ if __name__ == '__main__':
         avg_fitness_data.append(data[n].result()[2])
 
     # Plot fittest individual against generations for full fitness range, then from 0 < x < 1 fitness range
-    plot_data_full("Fittest Individual Full", GENERATIONS, fittest_data)
-    plot_data_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
+    plot_data_full("Fittest Individual Full", fittest_data)
+    plot_data_ylim("Fittest Individual Limited", fittest_data, 1)
     # Plot average fitness against generations for full fitness range, then from 0 < x < 1 fitness range
-    plot_data_full("Avg Fitness Full", GENERATIONS, avg_fitness_data)
-    plot_data_ylim("Avg Fitness Limited", GENERATIONS, avg_fitness_data, 1)
+    plot_data_full("Avg Fitness Full", avg_fitness_data)
+    plot_data_ylim("Avg Fitness Limited", avg_fitness_data, 1)
 
     print('')
     print('#######################################################################################')

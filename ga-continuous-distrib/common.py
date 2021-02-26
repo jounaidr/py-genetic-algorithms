@@ -72,6 +72,34 @@ def uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutation
 
     return children
 
+def non_uniform_mutation(children, fitness, lower_bound, upper_bound, mutation_rate, mutations):
+    # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
+    children_selection = np.random.choice(a=[True, False], size=children.shape[0], p=[mutation_rate, 1 - mutation_rate])
+    children_to_mutate = children[children_selection, :]
+    # Randomly choose indexes for each 'children_to_mutate' (which correspond to individuals 'genes') within the individuals range,
+    # for the given amount of 'mutations'
+    mutation_indexes = np.random.choice(a=children_to_mutate.shape[1], size=(children_to_mutate.shape[0], mutations))
+    # If the average fitness is greater than 1, replace the chosen indexes with random real values within the specified bounds,
+    # else replace with a proportional random value based of the average fitness,
+    # for each child selected for mutation np.mean(generation_fitness)
+    if np.mean(fitness) > 1:
+        mutated_genes = np.random.uniform(lower_bound, upper_bound, (children_to_mutate.shape[0], mutations))
+        children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes] = mutated_genes
+    else:
+        # Calculate new upper and lower bound based on: gene_to_mutate +- avg(fitness) * gene_to_mutate
+        lower_bound = children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes] \
+                      - np.abs(np.mean(fitness) * children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes])
+        upper_bound =  children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes] \
+                       + np.abs(np.mean(fitness) * children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes])
+
+        mutated_genes = np.random.uniform(lower_bound, upper_bound, (children_to_mutate.shape[0], mutations))
+        children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes] = mutated_genes
+
+    # Add the mutated children back into the 'children' array before returning them
+    children = np.vstack((children, children_to_mutate))
+
+    return children
+
 def boundary_mutation(children, lower_bound, upper_bound, mutation_rate, mutations):
     # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
     children_selection = np.random.choice(a=[True, False], size=children.shape[0], p=[mutation_rate, 1 - mutation_rate])
@@ -120,28 +148,28 @@ def display_fittest_individual(population, fitness):
         print('Fitness: ' + fitness[np.argmin(fitness)].astype(str))
 
 
-def generate_plot(title, generations, fitness_data):
+def generate_plot(title, fitness_data):
     # Set axis labels and title
     plt.title(title)
     plt.xlabel("Generation")
     plt.ylabel("Fittest Individual")
     # Plot each thread with a different random colour, and annotate its final gen best fitness value to the left of chart
     for n in range(len(fitness_data)):
-        plt.plot(range(generations), fitness_data[n], label='Thread ' + str(n), color=np.random.rand(3))
+        plt.plot(range(len(fitness_data[n])), fitness_data[n], label='Thread ' + str(n), color=np.random.rand(3))
         plt.annotate('%0.8f' % fitness_data[n][-1], xy=(1, fitness_data[n][-1]), xytext=(8, 0),
                      xycoords=('axes fraction', 'data'), textcoords='offset points')
     # Thread legend set to above the graph, with max columns set to 5
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=5)
 
 
-def plot_data_full(title, generations, fitness_values):
+def plot_data_full(title, fitness_values):
     # Plot the fitness values against generations for the whole Y range
-    generate_plot(title, generations, fitness_values)
+    generate_plot(title, fitness_values)
     plt.show()
 
 
-def plot_data_ylim(title, generations, fitness_values, ylim):
+def plot_data_ylim(title, fitness_values, ylim):
     # Plot the fitness values against generations for a specified Y range limit
     plt.ylim([0, ylim])
-    generate_plot(title, generations, fitness_values)
+    generate_plot(title, fitness_values)
     plt.show()

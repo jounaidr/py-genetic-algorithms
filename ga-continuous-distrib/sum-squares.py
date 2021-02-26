@@ -60,8 +60,8 @@ def main_threaded_loop(population, thread_no):
     # Set the start time before EA loop
     start_time = time.time()
 
-    # Termination condition. Can be set to just (SOLUTION_FOUND == True) to run until solution is found
-    while (GENERATIONS > generation_counter) or (SOLUTION_FOUND == True):
+    # Termination condition. Can be set to just (SOLUTION_FOUND == False) to run until solution is found
+    while (GENERATIONS > generation_counter) and (SOLUTION_FOUND == False):
         ###############################################################################
         ######################### EVOLUTIONARY ALGORITHM LOOP #########################
         ###############################################################################
@@ -77,7 +77,8 @@ def main_threaded_loop(population, thread_no):
         # Mutate the children using a random gene with random value with LOWER_BOUND < x < UPPER_BOUND range
         # The chance a child will be mutated is specified using 'MUTATION_RATE'
         # The amount of genes to mutate is specified using 'MUTATIONS'
-        children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
+        #children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
+        children = non_uniform_mutation(children, sum_squares_compute_fitness(population), LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
         population = np.vstack((population, children)) # Add the mutated children back into the population
 
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
@@ -169,11 +170,14 @@ if __name__ == '__main__':
         avg_fitness_data.append(data[n].result()[2])
 
     # Plot fittest individual against generations for full fitness range, then from 0 < x < 1 fitness range
-    plot_data_full("Fittest Individual Full", GENERATIONS, fittest_data)
-    plot_data_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
+    #plot_data_full("Fittest Individual Full", GENERATIONS, fittest_data)
+    #plot_data_ylim("Fittest Individual Limited", GENERATIONS, fittest_data, 1)
     # Plot average fitness against generations for full fitness range, then from 0 < x < 1 fitness range
-    plot_data_full("Avg Fitness Full", GENERATIONS, avg_fitness_data)
-    plot_data_ylim("Avg Fitness Limited", GENERATIONS, avg_fitness_data, 1)
+    #plot_data_full("Avg Fitness Full", GENERATIONS, avg_fitness_data)
+    plot_data_ylim("Avg Fitness Limited", avg_fitness_data, 1)
+    plot_data_ylim("Avg Fitness Limited", avg_fitness_data, 0.1)
+    plot_data_ylim("Avg Fitness Limited", avg_fitness_data, 0.01)
+    plot_data_ylim("Avg Fitness Limited", avg_fitness_data, 0.001)
 
     print('')
     print('#######################################################################################')
