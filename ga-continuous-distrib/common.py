@@ -135,7 +135,7 @@ def single_point_crossover_multi_index(parents):
 ###############################################################################
 
 
-def uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutations):
+def uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutations=1):
     # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
     children_selection = np.random.choice(a=[True, False], size=children.shape[0], p=[mutation_rate, 1 - mutation_rate])
     children_to_mutate = children[children_selection, :]
