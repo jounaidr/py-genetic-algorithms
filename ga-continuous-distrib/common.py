@@ -71,12 +71,21 @@ def selection_tournament(population, fitness, crossover_rate, tournament_proport
     return parents
 
 
-def selection_roulette_rank(population, fitness, crossover_rate, multi_selection=True):
+def selection_roulette_rank(population, fitness, crossover_rate, multi_selection=True, std_threshold=1):
     # If the standard deviation of fitness values is greater than 1, select using roulette wheel, otherwise use rank selection
-    if np.std(fitness) > 1:
+    if np.std(fitness) > std_threshold:
         return selection_roulette(population, fitness, crossover_rate, multi_selection)
     else:
         return selection_rank(population, fitness, crossover_rate, multi_selection)
+
+
+def selection_tournament_rank(population, fitness, crossover_rate, tournament_proportion=0.3, multi_selection=True, std_threshold=1):
+    # If the standard deviation of fitness values is greater than 1, select using tournament selection, otherwise use rank selection
+    if np.std(fitness) > std_threshold:
+        return selection_tournament(population, fitness, crossover_rate, tournament_proportion, multi_selection)
+    else:
+        return selection_rank(population, fitness, crossover_rate, multi_selection)
+
 
 ###############################################################################
 ############################# CROSSOVER FUNCTIONS #############################
@@ -151,6 +160,22 @@ def uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutation
     return children
 
 
+def boundary_mutation(children, lower_bound, upper_bound, mutation_rate, mutations):
+    # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
+    children_selection = np.random.choice(a=[True, False], size=children.shape[0], p=[mutation_rate, 1 - mutation_rate])
+    children_to_mutate = children[children_selection, :]
+    # Randomly choose indexes for each 'children_to_mutate' (which correspond to individuals 'genes') within the individuals range,
+    # for the given amount of 'mutations'
+    mutation_indexes = np.random.choice(a=children_to_mutate.shape[1], size=(children_to_mutate.shape[0], mutations))
+    # Replace the chosen indexes with either the upper or lower bound, for each child selected for mutation
+    mutated_genes = np.random.choice(a=[lower_bound, upper_bound], size=(children_to_mutate.shape[0], mutations))
+    children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes] = mutated_genes
+    # Add the mutated children back into the 'children' array before returning them
+    children = np.vstack((children, children_to_mutate))
+
+    return children
+
+
 def non_uniform_mutation(children, lower_bound, upper_bound, mutation_rate, mutations, fitness, fitness_threshold=1):
     # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
     children_selection = np.random.choice(a=[True, False], size=children.shape[0], p=[mutation_rate, 1 - mutation_rate])
@@ -174,22 +199,6 @@ def non_uniform_mutation(children, lower_bound, upper_bound, mutation_rate, muta
         mutated_genes = np.random.uniform(lower_bound, upper_bound, (children_to_mutate.shape[0], mutations))
         children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes] = mutated_genes
 
-    # Add the mutated children back into the 'children' array before returning them
-    children = np.vstack((children, children_to_mutate))
-
-    return children
-
-
-def boundary_mutation(children, lower_bound, upper_bound, mutation_rate, mutations):
-    # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
-    children_selection = np.random.choice(a=[True, False], size=children.shape[0], p=[mutation_rate, 1 - mutation_rate])
-    children_to_mutate = children[children_selection, :]
-    # Randomly choose indexes for each 'children_to_mutate' (which correspond to individuals 'genes') within the individuals range,
-    # for the given amount of 'mutations'
-    mutation_indexes = np.random.choice(a=children_to_mutate.shape[1], size=(children_to_mutate.shape[0], mutations))
-    # Replace the chosen indexes with either the upper or lower bound, for each child selected for mutation
-    mutated_genes = np.random.choice(a=[lower_bound, upper_bound], size=(children_to_mutate.shape[0], mutations))
-    children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes] = mutated_genes
     # Add the mutated children back into the 'children' array before returning them
     children = np.vstack((children, children_to_mutate))
 
