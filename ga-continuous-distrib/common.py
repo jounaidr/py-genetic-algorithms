@@ -52,14 +52,6 @@ def selection_rank(population, fitness, crossover_rate, multi_selection=True):
     return parents
 
 
-def selection_roulette_rank(population, fitness, crossover_rate, multi_selection=True):
-    # If the standard deviation of fitness values is greater than 1, select using roulette wheel, otherwise use rank selection
-    if np.std(fitness) > 1:
-        return selection_roulette(population, fitness, crossover_rate, multi_selection)
-    else:
-        return selection_rank(population, fitness, crossover_rate, multi_selection)
-
-
 def selection_tournament(population, fitness, crossover_rate, tournament_proportion=0.3, multi_selection=True):
     # Calculate the number of participants in the tournament based on the tournament_proportion
     tournament_size = int(population.shape[0] * tournament_proportion)
@@ -79,6 +71,13 @@ def selection_tournament(population, fitness, crossover_rate, tournament_proport
     return parents
 
 
+def selection_roulette_rank(population, fitness, crossover_rate, multi_selection=True):
+    # If the standard deviation of fitness values is greater than 1, select using roulette wheel, otherwise use rank selection
+    if np.std(fitness) > 1:
+        return selection_roulette(population, fitness, crossover_rate, multi_selection)
+    else:
+        return selection_rank(population, fitness, crossover_rate, multi_selection)
+
 ###############################################################################
 ############################# CROSSOVER FUNCTIONS #############################
 ###############################################################################
@@ -86,7 +85,7 @@ def selection_tournament(population, fitness, crossover_rate, tournament_proport
 
 def single_point_crossover_opt(parents):
     children = np.zeros_like(parents)  # Generate an empty array for the children the same shape as 'parents' array
-    crossover_point = random.randrange(1, children.shape[2])  # Get a random index within the individuals index range
+    crossover_point = random.randrange(0, children.shape[2])  # Get a random index within the individuals index range
     # First child takes values from first parent up to crossover point, then the rest of the values from second parent
     # Second child takes values from second parent up to crossover point, then the rest of the values from first parent
     # This is done for each set of parents in 'parents' 3D array
@@ -99,9 +98,25 @@ def single_point_crossover_opt(parents):
     return children
 
 
+def double_point_crossover_opt(parents):
+    children = np.zeros_like(parents)  # Generate an empty array for the children the same shape as 'parents' array
+    crossover_point_one = random.randrange(1, children.shape[2] - 1)  # Get the first random index within the individuals index range
+    crossover_point_two = random.randrange(crossover_point_one, children.shape[2])  # Use the first crossover point for the bounds to generate the second
+    # First child takes values from first parent up to crossover point one, then takes values from the second parent up until crossover point two, and the rest from first parent
+    # Second child takes values from second parent up to crossover point one, then takes values from the first parent up until crossover point two, and the rest from second parent
+    # This is done for each set of parents in 'parents' 3D array
+    # This is done using NumPy horizontal stack: https://numpy.org/doc/stable/reference/generated/numpy.hstack.html
+    children[:, 0, :] = np.hstack([parents[:, 0, :crossover_point_one], parents[:, 1, crossover_point_one:crossover_point_two], parents[:, 0, crossover_point_two:]])
+    children[:, 1, :] = np.hstack([parents[:, 1, :crossover_point_one], parents[:, 0, crossover_point_one:crossover_point_two], parents[:, 1, crossover_point_two:]])
+    # Reshape children array vertically as they no longer need to be in pairs
+    children = np.reshape(children, (children.shape[0] * children.shape[1], children.shape[2]))
+
+    return children
+
+
 def single_point_crossover_multi_index(parents):
     children = np.zeros_like(parents)  # Generate an empty array for the children the same shape as 'parents' array
-    crossover_points = np.random.choice(range(1, children.shape[2]),  children.shape[0]) # Get a set of random indexes within the individuals index range
+    crossover_points = np.random.choice(range(1, children.shape[2]), children.shape[0]) # Get a set of random indexes within the individuals index range
     # First child takes values from first parent up to crossover point, then the rest of the values from second parent
     # Second child takes values from second parent up to crossover point, then the rest of the values from first parent
     # This is done for each set of parents in 'parents' 3D array, with a different crossover point for each
