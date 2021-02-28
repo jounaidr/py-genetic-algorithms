@@ -52,9 +52,7 @@ def selection_rank(population, fitness, crossover_rate, multi_selection=True):
     return parents
 
 
-def selection_tournament(population, fitness, crossover_rate, tournament_proportion=0.3, multi_selection=True):
-    # Calculate the number of participants in the tournament based on the tournament_proportion
-    tournament_size = int(population.shape[0] * tournament_proportion)
+def selection_tournament(population, fitness, crossover_rate, tournament_size=10, multi_selection=True):
     # Calculate the number of parents to be selected based on crossover rate
     selection_amount = int(population.shape[0] * crossover_rate)
     # Combine the population with their respective fitness values
