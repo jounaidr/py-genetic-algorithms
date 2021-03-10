@@ -24,7 +24,7 @@ SOLUTION_FOUND = False # Whether an exact solution has been found (if using as t
 def bukin_compute_fitness(population):
     # Calculate the result based on: (100 * sqrt(abs(x1)) - (0.01 * x2^2))))) + (0.01 * abs(x1 + 10))), for each individuals values in the population
     result = (100 * np.sqrt(np.abs(population[:,1] - (0.01 * (population[:,0] ** 2))))) + (0.01 * np.abs(population[:,0] + 10))
-    fitness = abs(result[0:,] - 0) # Calculate the results absolute distance from 0, the minimal solution
+    fitness = abs(result[0:,]) # Calculate the results absolute distance from 0, the minimal solution
 
     return fitness
 

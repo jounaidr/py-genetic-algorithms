@@ -27,7 +27,7 @@ def sum_squares_compute_fitness(population):
     i = np.arange(1, population.shape[1] + 1)
     # Calculate the result based on: sum(ix^2), for each individuals values in the population
     result = np.sum(i * (np.abs(population[0:, ]) ** 2), axis=1)
-    fitness = abs(result[0:,] - 0) # Calculate the results absolute distance from 0, the minimal solution
+    fitness = abs(result[0:,]) # Calculate the results absolute distance from 0, the minimal solution
 
     return fitness
 

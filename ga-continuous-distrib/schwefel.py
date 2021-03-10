@@ -25,7 +25,7 @@ SOLUTION_FOUND = False # Whether an exact solution has been found (if using as t
 def schwefel_compute_fitness(population):
     # Calculate the result based on: 418.9829*POPULATION_SIZE - sum(x*sin(sqrt(abs(x)))), for each individuals values in the population
     result = (418.9829 * population.shape[1]) - np.sum((population[0:,] * np.sin(np.sqrt(np.abs(population[0:,])))), axis=1)
-    fitness = abs(result[0:,] - 0) # Calculate the results absolute distance from 0, the minimal solution
+    fitness = abs(result[0:,]) # Calculate the results absolute distance from 0, the minimal solution
 
     return fitness
 

@@ -25,7 +25,7 @@ def matyas_compute_fitness(population):
     # Calculate the result based on: 0.26*(x1^2 + x2^2) - 0.48*x1*x2 , for each individuals values in the population
     result = (0.26 * ((population[:,0] ** 2) + (population[:,1] ** 2))) \
              - (0.48 * population[:,0] * population[:,1])
-    fitness = abs(result[0:,] - 0) # Calculate the results absolute distance from 0, the minimal solution
+    fitness = abs(result[0:,]) # Calculate the results absolute distance from 0, the minimal solution
 
     return fitness
 
