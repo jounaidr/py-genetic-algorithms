@@ -100,11 +100,7 @@ def main_threaded_loop(population, thread_no):
         thread_data[2].append(np.mean(generation_fitness))
 
         # Check if a solution is found
-        if (INDIVIDUAL_SIZE == 2) and (-1.8013 in generation_fitness):
-            SOLUTION_FOUND = True
-        if (INDIVIDUAL_SIZE == 5) and (-4.687658 in generation_fitness):
-            SOLUTION_FOUND = True
-        if (INDIVIDUAL_SIZE == 10) and (-9.66015 in generation_fitness):
+        if 0 in generation_fitness:
             SOLUTION_FOUND = True
 
         # Increment the generation counter before reiterating through loop
