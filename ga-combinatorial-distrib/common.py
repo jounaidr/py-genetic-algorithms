@@ -20,9 +20,10 @@ def generate_binary_population(population_size, individual_size):
 
     return population.astype(int) # Return population with integer values
 
+
 def generate_string_population(population_size, individual_size):
     # Generate empty 2D array of size population_size x individual_size
-    population = np.chararray((population_size, individual_size))
+    population = np.empty((population_size, individual_size), dtype=object)
     # Populate 'population' array with arrays of size individual_size of random ASCII chars (using python string module)
     for i in range(population_size):
         population[i,] = np.random.choice(a=list(string.printable), size=individual_size)

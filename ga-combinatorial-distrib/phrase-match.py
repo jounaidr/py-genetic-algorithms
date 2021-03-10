@@ -5,24 +5,24 @@ from threading import Lock
 import time
 
 
-THREADS = 5 # The amount of threads that will run the EA loop concurrently on the same population
+THREADS = 1 # The amount of threads that will run the EA loop concurrently on the same population
 print_lock = Lock() # Thread lock for the print statements
 
-PHRASE = "pooop"
+PHRASE = "haha I like poop boyoyoyo"
 
-POPULATION_SIZE = 100 # The maximum size of the population for each generation
+POPULATION_SIZE = 10 # The maximum size of the population for each generation
 
 CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to produce offspring each generation
 MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
 MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation (can be randomised with limits)
 
-GENERATIONS = 10000 # The number of generations to run (if using as termination condition)
+GENERATIONS = 100000 # The number of generations to run (if using as termination condition)
 SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 
 def phrase_match_compute_fitness(population):
     # Calculate the number of chars different from each individual and the phrase
-    fitness = len(PHRASE) - np.sum(population == list(PHRASE), axis=1)
+    fitness = len(PHRASE) - np.sum(population[:,] == np.array(list(PHRASE)), axis=1)
 
     return fitness
 
@@ -60,28 +60,28 @@ def main_threaded_loop(population, thread_no):
         # Choose parents from the initial population based on roulette wheel probability selection
         # Will select amount of parents to satisfy the 'CROSSOVER_RATE'
         # If 'multi_selection' set to false, parents can only be chosen once each
-        parents = selection_roulette(population, sum_binary_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
+        parents = selection_roulette(population, phrase_match_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
 
         # Complete crossover of parents to produce their offspring
         # 'single_point_crossover' will choose 1 random position in each parents genome to crossover at
         children = single_point_crossover_opt(parents)
 
-        # Mutate the children using bit flip operation
+        # Mutate the children by replacing 'MUTATIONS' genes with a random char
         # The chance a child will be mutated is specified using 'MUTATION_RATE'
         # The amount of genes to mutate is specified using 'MUTATIONS'
-        children = bit_flip_mutation(children, MUTATION_RATE, MUTATIONS)
+        children = string_mutation(children, MUTATION_RATE, MUTATIONS)
         population = np.vstack((population, children)) # Add the mutated children back into the population
 
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
         # until the population is reduced to 'POPULATION_SIZE'
-        population = next_generation(population, sum_binary_compute_fitness(population), POPULATION_SIZE)
+        population = next_generation(population, phrase_match_compute_fitness(population), POPULATION_SIZE)
         ###############################################################################
 
         ###############################################################################
         ################################ DATA TRACKING ################################
         ###############################################################################
         # Calculate the fitness of the current gen population
-        generation_fitness = sum_binary_compute_fitness(population)
+        generation_fitness = phrase_match_compute_fitness(population)
 
         # Store fittest individual and mean fitness value data
         # NOTE: this section can commented out if data collection is not required to increase optimisation
@@ -112,12 +112,12 @@ def main_threaded_loop(population, thread_no):
         print(str(thread_data[0]) + 's')
         print('')
         print('FINAL GENERATION:')
-        display_population(population, sum_binary_compute_fitness(population), population.shape[0])
+        display_population(population, phrase_match_compute_fitness(population), population.shape[0])
         print('')
         print('FITTEST INDIVIDUAL:')
         print('')
         print('#############################')
-        display_fittest_individual(population, sum_binary_compute_fitness(population))
+        display_fittest_individual(population, phrase_match_compute_fitness(population))
         print('#############################')
         print('')
         print('EXECUTION TIME:')
@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
     print('')
     print('INITIAL POPULATION:')
-    display_population(initial_population, sum_binary_compute_fitness(initial_population), initial_population.shape[0])
+    display_population(initial_population, phrase_match_compute_fitness(initial_population), initial_population.shape[0])
     print('')
     print('STARTING EVOLUTIONARY ALGORITHM THREADS...')
 
