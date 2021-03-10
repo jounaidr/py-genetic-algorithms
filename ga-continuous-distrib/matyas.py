@@ -5,19 +5,19 @@ from threading import Lock
 import time
 
 
-THREADS = 5 # The amount of threads that will run the EA loop concurrently on the same population
+THREADS = 6 # The amount of threads that will run the EA loop concurrently on the same population
 print_lock = Lock() # Thread lock for the print statements
 
-POPULATION_SIZE = 10 # The maximum size of the population for each generation
+POPULATION_SIZE = 1000 # The maximum size of the population for each generation
 
 LOWER_BOUND = -10 # The lower limit that a gene value can be, default = -10
 UPPER_BOUND = 10 # The upper limit that a gene value can be, default = 10
 
 CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to produce offspring each generation
-MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
+MUTATION_RATE = 0.8 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
 MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation
 
-GENERATIONS = 100 # The number of generations to run (if using as termination condition)
+GENERATIONS = 100000 # The number of generations to run (if using as termination condition)
 SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 
@@ -65,7 +65,7 @@ def main_threaded_loop(population, thread_no):
         # Choose parents from the initial population based on roulette wheel probability selection
         # Will select amount of parents to satisfy the 'CROSSOVER_RATE'
         # If 'multi_selection' set to false, parents can only be chosen once each
-        parents = selection_roulette(population, matyas_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
+        parents = selection_rank(population, matyas_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
 
         # Complete crossover of parents to produce their offspring
         # 'single_point_crossover' will choose 1 random position in each parents genome to crossover at
@@ -74,7 +74,8 @@ def main_threaded_loop(population, thread_no):
         # Mutate the children using a random gene with random value with LOWER_BOUND < x < UPPER_BOUND range
         # The chance a child will be mutated is specified using 'MUTATION_RATE'
         # The amount of genes to mutate is specified using 'MUTATIONS'
-        children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
+        #children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
+        children = non_uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS, matyas_compute_fitness(population), fitness_threshold=1)
         population = np.vstack((population, children)) # Add the mutated children back into the population
 
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
@@ -166,11 +167,16 @@ if __name__ == '__main__':
         avg_fitness_data.append(data[n].result()[2])
 
     # Plot fittest individual against generations for full fitness range, then from 0 < x < 1 fitness range
-    plot_data_full("Fittest Individual Full", fittest_data)
-    plot_data_ylim("Fittest Individual Limited", fittest_data, 1)
+    #plot_data_full("Fittest Individual Full", fittest_data)
+    #plot_data_ylim("Fittest Individual Limited", fittest_data, 1)
     # Plot average fitness against generations for full fitness range, then from 0 < x < 1 fitness range
     plot_data_full("Avg Fitness Full", avg_fitness_data)
-    plot_data_ylim("Avg Fitness Limited", avg_fitness_data, 1)
+    plot_data_ylim("non_uniform_mutation", avg_fitness_data, 1)
+    plot_data_ylim("non_uniform_mutation", avg_fitness_data, 0.1)
+    plot_data_ylim("non_uniform_mutation", avg_fitness_data, 0.001)
+    plot_data_ylim("non_uniform_mutation", avg_fitness_data, 0.0001)
+    plot_data_ylim("non_uniform_mutation", avg_fitness_data, 0.00001)
+    plot_data_ylim("non_uniform_mutation", avg_fitness_data, 0.000001)
 
     print('')
     print('#######################################################################################')

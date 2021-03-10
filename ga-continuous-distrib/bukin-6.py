@@ -5,19 +5,22 @@ from threading import Lock
 import time
 
 
-THREADS = 5 # The amount of threads that will run the EA loop concurrently on the same population
+THREADS = 10 # The amount of threads that will run the EA loop concurrently on the same population
 print_lock = Lock() # Thread lock for the print statements
 
-POPULATION_SIZE = 100 # The maximum size of the population for each generation
+POPULATION_SIZE = 1000 # The maximum size of the population for each generation
 
-LOWER_BOUND = [-15, -3] # The lower limit that [x1, x2] gene values can be, default = [-15, -3] OR -15
-UPPER_BOUND = [-5, 3] # The upper limit that [x1, x2] gene values can be, default = [-5, 3] OR 3
+#LOWER_BOUND = [-15, -3] # The lower limit that [x1, x2] gene values can be, default = [-15, -3] OR -15
+#UPPER_BOUND = [-5, 3] # The upper limit that [x1, x2] gene values can be, default = [-5, 3] OR 3
+
+LOWER_BOUND = -15 # The lower limit that [x1, x2] gene values can be, default = [-15, -3] OR -15
+UPPER_BOUND = 3 # The upper limit that [x1, x2] gene values can be, default = [-5, 3] OR 3
 
 CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to produce offspring each generation
-MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
-MUTATIONS = 2 # The number of genes that are mutated if an offspring is selected for mutation, MUST BE 2 IF USING SEPARATE [x1, x2] BOUNDS!
+MUTATION_RATE = 1 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
+MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation, MUST BE 2 IF USING SEPARATE [x1, x2] BOUNDS!
 
-GENERATIONS = 10000 # The number of generations to run (if using as termination condition)
+GENERATIONS = 50000 # The number of generations to run (if using as termination condition)
 SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 
@@ -73,6 +76,7 @@ def main_threaded_loop(population, thread_no):
         # Mutate the children using a random gene with random value with LOWER_BOUND < x < UPPER_BOUND range
         # The chance a child will be mutated is specified using 'MUTATION_RATE'
         # The amount of genes to mutate is specified using 'MUTATIONS'
+        #children = non_uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS, bukin_compute_fitness(population), fitness_threshold=0.00001) #TODO: OPTIMISE SO THAT ONLY 1 GENE IS SELECTED FOR MUTATION
         children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS) #TODO: OPTIMISE SO THAT ONLY 1 GENE IS SELECTED FOR MUTATION
         population = np.vstack((population, children)) # Add the mutated children back into the population
 
@@ -165,11 +169,18 @@ if __name__ == '__main__':
         avg_fitness_data.append(data[n].result()[2])
 
     # Plot fittest individual against generations for full fitness range, then from 0 < x < 1 fitness range
-    plot_data_full("Fittest Individual Full", fittest_data)
-    plot_data_ylim("Fittest Individual Limited", fittest_data, 1)
+    #plot_data_full("Fittest Individual Full", fittest_data)
+    #plot_data_ylim("Fittest Individual Limited", fittest_data, 1)
     # Plot average fitness against generations for full fitness range, then from 0 < x < 1 fitness range
     plot_data_full("Avg Fitness Full", avg_fitness_data)
-    plot_data_ylim("Avg Fitness Limited", avg_fitness_data, 1)
+    plot_data_ylim("uniform_mutation", avg_fitness_data, 10)
+    plot_data_ylim("uniform_mutation", avg_fitness_data, 1)
+    plot_data_ylim("uniform_mutation", avg_fitness_data, .1)
+    plot_data_ylim("uniform_mutation", avg_fitness_data, .01)
+    plot_data_ylim("uniform_mutation", avg_fitness_data, .001)
+    plot_data_ylim("uniform_mutation", avg_fitness_data, .0001)
+    plot_data_ylim("uniform_mutation", avg_fitness_data, .00001)
+    plot_data_ylim("uniform_mutation", avg_fitness_data, .000001)
 
     print('')
     print('#######################################################################################')

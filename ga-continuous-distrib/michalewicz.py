@@ -5,10 +5,10 @@ from threading import Lock
 import time
 
 
-THREADS = 5 # The amount of threads that will run the EA loop concurrently on the same population
+THREADS = 50 # The amount of threads that will run the EA loop concurrently on the same population
 print_lock = Lock() # Thread lock for the print statements
 
-POPULATION_SIZE = 10 # The maximum size of the population for each generation
+POPULATION_SIZE = 10000 # The maximum size of the population for each generation
 
 INDIVIDUAL_SIZE = 10 # The number genes in each individual in the population, global minima at: 2,5,10
 LOWER_BOUND = 0 # The lower limit that a gene value can be, default = 0
@@ -18,10 +18,10 @@ TARGET = -9.66015 # for INDIVIDUAL_SIZE = 2,5,10, TARGET =  -1.8013, -4.687658, 
 STEEPNESS = 10 # Steepness of valleys and ridges, larger value increases search difficulty, default = 10
 
 CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to produce offspring each generation
-MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
+MUTATION_RATE = 0.8 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
 MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation (can be randomised with limits)
 
-GENERATIONS = 10000 # The number of generations to run (if using as termination condition)
+GENERATIONS = 1000 # The number of generations to run (if using as termination condition)
 SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 
@@ -43,7 +43,7 @@ def main_threaded_loop(population, thread_no):
     global UPPER_BOUND
 
     global GENERATIONS
-    global SOLUTION_FOUND # Replace with local variable: SOLUTION_FOUND = False, to not stop other threads if solution is found in one thread
+    SOLUTION_FOUND = False # Replace with local variable: SOLUTION_FOUND = False, to not stop other threads if solution is found in one thread
 
     global CROSSOVER_RATE
     global MUTATION_RATE
@@ -71,7 +71,7 @@ def main_threaded_loop(population, thread_no):
         # Choose parents from the initial population based on roulette wheel probability selection
         # Will select amount of parents to satisfy the 'CROSSOVER_RATE'
         # If 'multi_selection' set to false, parents can only be chosen once each
-        parents = selection_roulette(population, michalewicz_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
+        parents = selection_rank(population, michalewicz_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
 
         # Complete crossover of parents to produce their offspring
         # 'single_point_crossover' will choose 1 random position in each parents genome to crossover at
@@ -80,7 +80,8 @@ def main_threaded_loop(population, thread_no):
         # Mutate the children using a random gene with random value with LOWER_BOUND < x < UPPER_BOUND range
         # The chance a child will be mutated is specified using 'MUTATION_RATE'
         # The amount of genes to mutate is specified using 'MUTATIONS'
-        children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
+        #children = uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS)
+        children = non_uniform_mutation(children, LOWER_BOUND, UPPER_BOUND, MUTATION_RATE, MUTATIONS, michalewicz_compute_fitness(population), fitness_threshold=1)
         population = np.vstack((population, children)) # Add the mutated children back into the population
 
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
@@ -100,11 +101,7 @@ def main_threaded_loop(population, thread_no):
         thread_data[2].append(np.mean(generation_fitness))
 
         # Check if a solution is found
-        if (INDIVIDUAL_SIZE == 2) and (-1.8013 in generation_fitness):
-            SOLUTION_FOUND = True
-        if (INDIVIDUAL_SIZE == 5) and (-4.687658 in generation_fitness):
-            SOLUTION_FOUND = True
-        if (INDIVIDUAL_SIZE == 10) and (-9.66015 in generation_fitness):
+        if 0 in generation_fitness:
             SOLUTION_FOUND = True
 
         # Increment the generation counter before reiterating through loop
@@ -127,7 +124,7 @@ def main_threaded_loop(population, thread_no):
         print(str(thread_data[0]) + 's')
         print('')
         print('FINAL GENERATION:')
-        display_population(population, michalewicz_compute_fitness(population), population.shape[0])
+        #display_population(population, michalewicz_compute_fitness(population), population.shape[0])
         print('')
         print('FITTEST INDIVIDUAL:')
         print('')
@@ -176,11 +173,16 @@ if __name__ == '__main__':
         avg_fitness_data.append(data[n].result()[2])
 
     # Plot fittest individual against generations for full fitness range, then from 0 < x < 1 fitness range
-    plot_data_full("Fittest Individual Full", fittest_data)
-    plot_data_ylim("Fittest Individual Limited", fittest_data, 1)
+    #plot_data_full("Fittest Individual Full", fittest_data)
+    #plot_data_ylim("Fittest Individual Limited", fittest_data, 1)
     # Plot average fitness against generations for full fitness range, then from 0 < x < 1 fitness range
-    plot_data_full("Avg Fitness Full", avg_fitness_data)
-    plot_data_ylim("Avg Fitness Limited", avg_fitness_data, 1)
+    # plot_data_ylim("INDIVIDUAL_SIZE=10, STEEPNESS=10", avg_fitness_data, 10)
+    # plot_data_ylim("INDIVIDUAL_SIZE=10, STEEPNESS=10", avg_fitness_data, 1)
+    # plot_data_ylim("INDIVIDUAL_SIZE=10, STEEPNESS=10", avg_fitness_data, .1)
+    # plot_data_ylim("INDIVIDUAL_SIZE=10, STEEPNESS=10", avg_fitness_data, .01)
+    # plot_data_ylim("INDIVIDUAL_SIZE=10, STEEPNESS=10", avg_fitness_data, .001)
+    # plot_data_ylim("INDIVIDUAL_SIZE=10, STEEPNESS=10", avg_fitness_data, .0001)
+    # plot_data_ylim("INDIVIDUAL_SIZE=10, STEEPNESS=10", avg_fitness_data, .00001)
 
     print('')
     print('#######################################################################################')
@@ -188,12 +190,19 @@ if __name__ == '__main__':
     print('#######################################################################################')
     print('')
 
+    generations_solution = []
+    total_generations = 0
+
     for n in range(THREADS):
         print('THREAD: ' + str(n) + ' GENERATIONS: ' + str(len(fittest_data[n])), end="")
+        total_generations += len(fittest_data[n])
         if 0 in fittest_data[n]:
+            generations_solution.append(len(fittest_data[n]))
             print(', SOLUTION IN THREAD!')
         else:
             print()
 
     print('')
     print('MEAN EXECUTION TIME: ' + str(np.mean(execution_time_data)) + 's')
+    print('MEAN GENERATIONS: ' + str(int(total_generations / THREADS)))
+    print('MEAN GENERATIONS UNTIL SOLUTION: ' + str(int(np.mean(generations_solution))))

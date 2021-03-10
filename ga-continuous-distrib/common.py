@@ -52,7 +52,7 @@ def selection_rank(population, fitness, crossover_rate, multi_selection=True):
     return parents
 
 
-def selection_tournament(population, fitness, crossover_rate, tournament_proportion=0.3, multi_selection=True):
+def selection_tournament(population, fitness, crossover_rate, tournament_proportion=0.7, multi_selection=True):
     # Calculate the number of participants in the tournament based on the tournament_proportion
     tournament_size = int(population.shape[0] * tournament_proportion)
     # Calculate the number of parents to be selected based on crossover rate
@@ -251,7 +251,7 @@ def generate_plot(title, fitness_data):
     # Set axis labels and title
     plt.title(title)
     plt.xlabel("Generation")
-    plt.ylabel("Fittest Individual")
+    plt.ylabel("Fitness")
     # Plot each thread with a different random colour, and annotate its final gen best fitness value to the left of chart
     for n in range(len(fitness_data)):
         plt.plot(range(len(fitness_data[n])), fitness_data[n], label='Thread ' + str(n), color=np.random.rand(3))
