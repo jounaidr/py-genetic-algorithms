@@ -26,6 +26,16 @@ def sum_squares_compute_fitness(population):
     # Generate a 1D array of indexes from 1 to the individuals size
     i = np.arange(1, population.shape[1] + 1)
     # Calculate the result based on: sum(ix^2), for each individuals values in the population
+    result = np.sum(i * (np.abs(population[0:, ]) ** 2), axis=1)
+    fitness = abs(result[0:,] - 0) # Calculate the results absolute distance from 0, the minimal solution
+
+    return fitness
+
+
+def sum_squares_compute_fitness_nosign(population):
+    # Generate a 1D array of indexes from 1 to the individuals size
+    i = np.arange(1, population.shape[1] + 1)
+    # Calculate the result based on: sum(ix^2), for each individuals values in the population (sign omitted)
     result = np.sum(i * ((np.abs(population[0:,]) ** 2) * np.sign(population[0:,])), axis=1)
     fitness = abs(result[0:,] - 0) # Calculate the results absolute distance from 0, the minimal solution
 
