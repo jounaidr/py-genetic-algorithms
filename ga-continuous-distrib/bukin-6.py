@@ -177,12 +177,19 @@ if __name__ == '__main__':
     print('#######################################################################################')
     print('')
 
+    generations_solution = []
+    total_generations = 0
+
     for n in range(THREADS):
         print('THREAD: ' + str(n) + ' GENERATIONS: ' + str(len(fittest_data[n])), end="")
+        total_generations += len(fittest_data[n])
         if 0 in fittest_data[n]:
+            generations_solution.append(len(fittest_data[n]))
             print(', SOLUTION IN THREAD!')
         else:
             print()
 
     print('')
     print('MEAN EXECUTION TIME: ' + str(np.mean(execution_time_data)) + 's')
+    print('MEAN GENERATIONS: ' + str(int(total_generations / THREADS)))
+    print('MEAN GENERATIONS UNTIL SOLUTION: ' + str(int(np.mean(generations_solution))))
