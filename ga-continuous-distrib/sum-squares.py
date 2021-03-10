@@ -209,4 +209,4 @@ if __name__ == '__main__':
     print('')
     print('MEAN EXECUTION TIME: ' + str(np.mean(execution_time_data)) + 's')
     print('MEAN GENERATIONS: ' + str(int(total_generations / THREADS)))
-    print('MEAN GENERATIONS UNTIL SOLUTION: ' + str(int(np.mean(generations_solution))))
+    #print('MEAN GENERATIONS UNTIL SOLUTION: ' + str(int(np.mean(generations_solution))))
