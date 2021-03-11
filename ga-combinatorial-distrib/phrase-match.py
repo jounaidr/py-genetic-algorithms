@@ -129,7 +129,7 @@ def main_threaded_loop(population, thread_no):
 if __name__ == '__main__':
     print('')
     print('#######################################################################################')
-    print('########################## SUM BINARY EVOLUTIONARY ALGORITHM ##########################')
+    print('######################### PHRASE MATCH EVOLUTIONARY ALGORITHM #########################')
     print('#######################################################################################')
 
     # Generate initial population given parameters
