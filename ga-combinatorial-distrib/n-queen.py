@@ -8,15 +8,15 @@ import time
 THREADS = 5 # The amount of threads that will run the EA loop concurrently on the same population
 print_lock = Lock() # Thread lock for the print statements
 
-QUEENS = 10 # Used for individual size
+QUEENS = 100 # Used for individual size
 
-POPULATION_SIZE = 5 # The maximum size of the population for each generation
+POPULATION_SIZE = 100 # The maximum size of the population for each generation
 
 CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to produce offspring each generation
 MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
 MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation (can be randomised with limits)
 
-GENERATIONS = 1000 # The number of generations to run (if using as termination condition)
+GENERATIONS = 10000 # The number of generations to run (if using as termination condition)
 SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 

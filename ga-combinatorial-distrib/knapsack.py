@@ -19,7 +19,7 @@ CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to p
 MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
 MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation (can be randomised with limits)
 
-GENERATIONS = 100 # The number of generations to run (if using as termination condition)
+GENERATIONS = 1000 # The number of generations to run (if using as termination condition)
 
 
 def generate_items():
