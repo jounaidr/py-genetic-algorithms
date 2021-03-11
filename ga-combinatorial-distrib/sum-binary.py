@@ -19,9 +19,17 @@ GENERATIONS = 10000 # The number of generations to run (if using as termination 
 SOLUTION_FOUND = False # Whether an exact solution has been found (if using as termination condition)
 
 
-def sum_binary_compute_fitness(population):
+def sum_binary_compute_fitness_min(population):
     # Calculate the sum of each binary string in the population
     fitness = np.sum(population, axis=1)
+
+    return fitness
+
+
+def sum_binary_compute_fitness_max(population):
+    # Calculate the sum of each binary string in the population
+    # For maximisation problem invert fitness
+    fitness = population.shape[1] - np.sum(population, axis=1)
 
     return fitness
 
@@ -41,7 +49,7 @@ def main_threaded_loop(population, thread_no):
 
     # Calculate the fitness of the initial population and store fittest individual and mean fitness value data
     # NOTE: the following code can be commented out if data collection is not required
-    initial_fitness = sum_binary_compute_fitness(population)
+    initial_fitness = sum_binary_compute_fitness_min(population)
     thread_data[1].append(initial_fitness[np.argmin(initial_fitness)])
     thread_data[2].append(np.mean(initial_fitness))
 
@@ -59,7 +67,7 @@ def main_threaded_loop(population, thread_no):
         # Choose parents from the initial population based on roulette wheel probability selection
         # Will select amount of parents to satisfy the 'CROSSOVER_RATE'
         # If 'multi_selection' set to false, parents can only be chosen once each
-        parents = selection_roulette(population, sum_binary_compute_fitness(population), CROSSOVER_RATE, multi_selection=True)
+        parents = selection_roulette(population, sum_binary_compute_fitness_min(population), CROSSOVER_RATE, multi_selection=True)
 
         # Complete crossover of parents to produce their offspring
         # 'single_point_crossover' will choose 1 random position in each parents genome to crossover at
@@ -73,14 +81,14 @@ def main_threaded_loop(population, thread_no):
 
         # Calculate the next generation of the population, this is done by killing all the weakest individuals
         # until the population is reduced to 'POPULATION_SIZE'
-        population = next_generation(population, sum_binary_compute_fitness(population), POPULATION_SIZE)
+        population = next_generation(population, sum_binary_compute_fitness_min(population), POPULATION_SIZE)
         ###############################################################################
 
         ###############################################################################
         ################################ DATA TRACKING ################################
         ###############################################################################
         # Calculate the fitness of the current gen population
-        generation_fitness = sum_binary_compute_fitness(population)
+        generation_fitness = sum_binary_compute_fitness_min(population)
 
         # Store fittest individual and mean fitness value data
         # NOTE: this section can commented out if data collection is not required to increase optimisation
@@ -111,12 +119,12 @@ def main_threaded_loop(population, thread_no):
         print(str(thread_data[0]) + 's')
         print('')
         print('FINAL GENERATION:')
-        display_population(population, sum_binary_compute_fitness(population), population.shape[0])
+        display_population(population, sum_binary_compute_fitness_min(population), population.shape[0])
         print('')
         print('FITTEST INDIVIDUAL:')
         print('')
         print('#############################')
-        display_fittest_individual(population, sum_binary_compute_fitness(population))
+        display_fittest_individual(population, sum_binary_compute_fitness_min(population))
         print('#############################')
         print('')
         print('EXECUTION TIME:')
@@ -136,7 +144,7 @@ if __name__ == '__main__':
 
     print('')
     print('INITIAL POPULATION:')
-    display_population(initial_population, sum_binary_compute_fitness(initial_population), initial_population.shape[0])
+    display_population(initial_population, sum_binary_compute_fitness_min(initial_population), initial_population.shape[0])
     print('')
     print('STARTING EVOLUTIONARY ALGORITHM THREADS...')
 
