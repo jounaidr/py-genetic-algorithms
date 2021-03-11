@@ -30,6 +30,15 @@ def generate_string_population(population_size, individual_size):
 
     return population
 
+def generate_integer_population(population_size, individual_size):
+    # Generate empty 2D array of size population_size x individual_size
+    population = np.empty((population_size, individual_size), dtype=int)
+    # Populate 'population' array with arrays of size individual_size of random integer values within 'individual_size' range
+    for i in range(population_size):
+        population[i,] = np.random.choice(a=individual_size, size=individual_size)
+
+    return population
+
 
 ###############################################################################
 ############################# SELECTION FUNCTIONS #############################
@@ -186,6 +195,23 @@ def string_mutation(children, mutation_rate, mutations=1):
 
     return children
 
+
+def integer_mutation(children, lower_bound, upper_bound, mutation_rate, mutations=1):
+    # Select indexes from the 'children' array based on the mutation_rate, which will be mutated
+    children_selection = np.random.choice(a=[True, False], size=children.shape[0], p=[mutation_rate, 1 - mutation_rate])
+    children_to_mutate = children[children_selection, :]
+    # Randomly choose indexes for each 'children_to_mutate' (which correspond to individuals 'genes') within the individuals range,
+    # for the given amount of 'mutations'
+    mutation_indexes = np.random.choice(a=children_to_mutate.shape[1], size=(children_to_mutate.shape[0], mutations))
+    # Replace the chosen indexes with random integer values within the specified bounds, for each child selected for mutation
+    mutated_genes = np.random.randint(lower_bound, upper_bound, (children_to_mutate.shape[0], mutations))
+    children_to_mutate[np.arange(children_to_mutate.shape[0])[:, None], mutation_indexes] = mutated_genes
+    # Add the mutated children back into the 'children' array before returning them
+    children = np.vstack((children, children_to_mutate))
+
+    return children
+
+
 ###############################################################################
 ############################## SURVIVE FUNCTIONS ##############################
 ###############################################################################
@@ -252,4 +278,26 @@ def plot_data_ylim(title, fitness_values, ylim):
     # Plot the fitness values against generations for a specified Y range limit
     plt.ylim([0, ylim])
     generate_plot(title, fitness_values)
+    plt.show()
+
+
+def plot_chessboard(positions, title):
+    # Source: https://stackoverflow.com/questions/23298961/how-to-create-a-certain-type-of-grid-with-matplotlib
+    board = np.zeros((len(positions), len(positions), 3))
+    board += 0.5  # "Black" color. Can also be a sequence of r,g,b with values 0-1.
+    board[::2, ::2] = 1  # "White" color
+    board[1::2, 1::2] = 1  # "White" color
+
+    positions = positions
+
+    fig, ax = plt.subplots()
+    ax.imshow(board, interpolation='nearest')
+
+    for x, y in enumerate(positions):
+        # Use "family='font name'" to change the font
+        ax.text(x, y, u'\u2655', size=30, ha='center', va='center')
+
+    ax.set(xticks=[], yticks=[])
+    ax.axis('image')
+    plt.title(title)
     plt.show()
