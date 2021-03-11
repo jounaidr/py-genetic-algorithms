@@ -251,7 +251,7 @@ def generate_plot(title, fitness_data):
     # Set axis labels and title
     plt.title(title)
     plt.xlabel("Generation")
-    plt.ylabel("Fittest Individual")
+    plt.ylabel("Fitness")
     # Plot each thread with a different random colour, and annotate its final gen best fitness value to the left of chart
     for n in range(len(fitness_data)):
         plt.plot(range(len(fitness_data[n])), fitness_data[n], label='Thread ' + str(n), color=np.random.rand(3))
