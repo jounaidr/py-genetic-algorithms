@@ -122,7 +122,8 @@ def main_threaded_loop(population, thread_no):
         print('')
         print('#############################')
         display_fittest_individual(population, n_queen_compute_fitness(population))
-        plot_chessboard(population[np.argmin(n_queen_compute_fitness(population))], "THREAD " + str(thread_no))
+        # NOTE: PyPlot is NOT thread safe, running the below line can cause issues
+        #plot_chessboard(population[np.argmin(n_queen_compute_fitness(population))], "THREAD " + str(thread_no))
         print('#############################')
         print('')
         print('EXECUTION TIME:')
