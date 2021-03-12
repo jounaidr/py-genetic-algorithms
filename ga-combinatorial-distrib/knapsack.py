@@ -19,13 +19,13 @@ CROSSOVER_RATE = 0.8 # The proportion of the population that will crossover to p
 MUTATION_RATE = 0.2 # The chance each offspring has of a gene (or multiple genes) being mutated each generation
 MUTATIONS = 1 # The number of genes that are mutated if an offspring is selected for mutation (can be randomised with limits)
 
-GENERATIONS = 1000 # The number of generations to run (if using as termination condition)
+GENERATIONS = 100 # The number of generations to run (if using as termination condition)
 
 
 def generate_items():
     # Generate items of random weight from 1 < x < 15 and value 10 < x < 1000
     ITEMS[:, 0] = np.random.randint(1, 15, size=ITEM_AMOUNT)
-    ITEMS[:, 1] = np.random.randint(10, 1000, size = 10)
+    ITEMS[:, 1] = np.random.randint(10, 1000, size=ITEM_AMOUNT)
     # Print the items with a pandas dataframe
     print(pd.DataFrame({'Weight': ITEMS[:, 0],
                         'Value':  ITEMS[:, 1]}).astype(int))
@@ -138,7 +138,7 @@ def main_threaded_loop(population, thread_no):
         print(pd.DataFrame({'Weight': ITEMS[population_bool[np.argmax(sum_knapsack_compute_fitness(population)),:], 0],
                             'Value': ITEMS[population_bool[np.argmax(sum_knapsack_compute_fitness(population)),:], 1]}).astype(int))
         print('')
-        print('Total Value: ' + sum_knapsack_compute_fitness(population)[np.argmax(sum_knapsack_compute_fitness(population))].astype(str))
+        print('Total Value: ' + (np.sum(ITEMS[:, 1]) - sum_knapsack_compute_fitness(population)[np.argmax(sum_knapsack_compute_fitness(population))]).astype(str))
         print('#############################')
         print('')
         print('EXECUTION TIME:')
@@ -186,8 +186,8 @@ if __name__ == '__main__':
         avg_fitness_data.append(data[n].result()[2])
 
 
-    plot_data_full("Fittest Individual", fittest_data)
-    plot_data_full("Avg Fitness", avg_fitness_data)
+    plot_data_full("10 Items", fittest_data)
+    plot_data_full("10 Items", avg_fitness_data)
 
     print('')
     print('#######################################################################################')
