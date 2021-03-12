@@ -9,9 +9,9 @@ THREADS = 5 # The amount of threads that will run the EA loop concurrently on th
 print_lock = Lock() # Thread lock for the print statements
 
 ITEM_AMOUNT = 10 # Also used as individual size
-ITEMS = np.zeros((ITEM_AMOUNT, 2))
+ITEMS = np.zeros((ITEM_AMOUNT, 2)) # 2D list of item weights and values
 
-KNAPSACK_MAX_WEIGHT = 35
+KNAPSACK_MAX_WEIGHT = 35 # Threshold value for sack weights
 
 POPULATION_SIZE = 100 # The maximum size of the population for each generation
 
