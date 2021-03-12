@@ -8,7 +8,7 @@ import time
 THREADS = 1 # The amount of threads that will run the EA loop concurrently on the same population
 print_lock = Lock() # Thread lock for the print statements
 
-PHRASE = "haha I like poop boyoyoyo!!!"
+PHRASE = "Hi varun plz give me good mark thanks =)"
 
 POPULATION_SIZE = 10 # The maximum size of the population for each generation
 
