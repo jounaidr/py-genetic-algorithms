@@ -1,5 +1,5 @@
 # py-genetic-algorithms
-Sandbox repo for various genetic algorithms, writing in python.
+Sandbox repo for various genetic algorithms, writing in python. See full documentation/experimentation [here](https://github.com/jounaidr/py-genetic-algorithms/blob/master/docs.pdf).
 
 ### How to run scripts
 
